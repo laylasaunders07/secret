@@ -1,67 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Airtable Demo</title>
+  <meta charset="UTF-8" />
+  <title>Google Sheets Guestbook</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    input, textarea { display: block; margin: 1em 0; width: 300px; padding: 0.5em; }
-    button { padding: 0.5em 1em; cursor: pointer; }
-    .message { background: #f5f5f5; padding: 0.5em; margin: 0.5em 0; border-radius: 5px; }
+    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
+    input, textarea { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 0.6em 1.2em; border: none; border-radius: 6px; background: #1976d2; color: white; cursor: pointer; }
+    button:disabled { background: #90caf9; cursor: not-allowed; }
+    .message { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; }
+    .loading { display: none; color: #1976d2; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>💬 Public Guestbook (Airtable)</h1>
-  <form id="msgForm">
-    <input type="text" id="name" placeholder="Your name" required>
+  <h1>💬 Guestbook (Google Sheets)</h1>
+
+  <form id="form">
+    <input id="name" placeholder="Your name" required />
     <textarea id="message" placeholder="Your message..." required></textarea>
     <button type="submit">Send</button>
+    <span id="loading" class="loading">Sending...</span>
   </form>
 
   <h2>Messages</h2>
   <div id="messages"></div>
 
   <script>
-    const AIRTABLE_TOKEN = "YOUR_AIRTABLE_TOKEN"; // ⚠️ For demo only
-    const BASE_ID = "YOUR_BASE_ID";
-    const TABLE_NAME = "Messages";
+    // --- CONFIGURATION ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbydjQwL-8Oo4bOpsoK4SJfVTzUlU1b_6Z1aG-y36fHdscH1TwYQ-8GeMr54Dt-3uRTJTw/exec";   // Replace with your Apps Script web app URL
+    const SECRET_KEY = "alva-the-fortnite-god";    // Must match the key in Apps Script
 
-    const apiUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+    // --- UTILITIES ---
 
-    const headers = {
-      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      "Content-Type": "application/json"
-    };
-
+    // Load and display all messages
     async function loadMessages() {
-      const res = await fetch(apiUrl, { headers });
+      const res = await fetch(API_URL);
       const data = await res.json();
-      const messagesDiv = document.getElementById('messages');
-      messagesDiv.innerHTML = "";
-      data.records.forEach(record => {
-        const { Name, Message } = record.fields;
-        const div = document.createElement('div');
+      const container = document.getElementById("messages");
+      container.innerHTML = "";
+
+      // Show newest first
+      data.reverse().forEach(msg => {
+        const div = document.createElement("div");
         div.className = "message";
-        div.innerHTML = `<strong>${Name}:</strong> ${Message}`;
-        messagesDiv.appendChild(div);
+        div.innerHTML = `<strong>${msg.name}</strong>: ${msg.message}<br>
+                         <small>${msg.timestamp}</small>`;
+        container.appendChild(div);
       });
     }
 
-    document.getElementById('msgForm').addEventListener('submit', async (e) => {
+    // --- FORM HANDLER ---
+    const form = document.getElementById("form");
+    const loading = document.getElementById("loading");
+    const button = form.querySelector("button");
+
+    form.addEventListener("submit", async e => {
       e.preventDefault();
-      const name = document.getElementById('name').value;
-      const message = document.getElementById('message').value;
-      await fetch(apiUrl, {
+
+      // Disable while sending + show loading text
+      button.disabled = true;
+      loading.style.display = "inline";
+
+      const name = document.getElementById("name").value.trim();
+      const message = document.getElementById("message").value.trim();
+
+      // Send to Google Apps Script
+      await fetch(API_URL, {
         method: "POST",
-        headers,
-        body: JSON.stringify({
-          records: [{ fields: { Name: name, Message: message } }]
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, message, key: SECRET_KEY })
       });
-      document.getElementById('msgForm').reset();
+
+      // Reset form + UI
+      form.reset();
+      button.disabled = false;
+      loading.style.display = "none";
+
+      // Refresh message list
       loadMessages();
     });
 
+    // Load messages on page load
     loadMessages();
   </script>
 </body>
