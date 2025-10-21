@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Airtable Demo</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    input, textarea { display: block; margin: 1em 0; width: 300px; padding: 0.5em; }
+    button { padding: 0.5em 1em; cursor: pointer; }
+    .message { background: #f5f5f5; padding: 0.5em; margin: 0.5em 0; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>💬 Public Guestbook (Airtable)</h1>
+  <form id="msgForm">
+    <input type="text" id="name" placeholder="Your name" required>
+    <textarea id="message" placeholder="Your message..." required></textarea>
+    <button type="submit">Send</button>
+  </form>
+
+  <h2>Messages</h2>
+  <div id="messages"></div>
+
+  <script>
+    const AIRTABLE_TOKEN = "YOUR_AIRTABLE_TOKEN"; // ⚠️ For demo only
+    const BASE_ID = "YOUR_BASE_ID";
+    const TABLE_NAME = "Messages";
+
+    const apiUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+
+    const headers = {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json"
+    };
+
+    async function loadMessages() {
+      const res = await fetch(apiUrl, { headers });
+      const data = await res.json();
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = "";
+      data.records.forEach(record => {
+        const { Name, Message } = record.fields;
+        const div = document.createElement('div');
+        div.className = "message";
+        div.innerHTML = `<strong>${Name}:</strong> ${Message}`;
+        messagesDiv.appendChild(div);
+      });
+    }
+
+    document.getElementById('msgForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const message = document.getElementById('message').value;
+      await fetch(apiUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          records: [{ fields: { Name: name, Message: message } }]
+        })
+      });
+      document.getElementById('msgForm').reset();
+      loadMessages();
+    });
+
+    loadMessages();
+  </script>
+</body>
+</html>
