@@ -9,7 +9,14 @@
   </style>
 </head>
 <body>
-  <a href="users.html">← Back to users</a>
+  <a id="backLink" href="#">← Back</a>
+    <script>
+      // Determine the referrer from the query string
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get("from") || "index.html";
+      document.getElementById("backLink").href = from;
+    </script>
+
   <h1 id="username"></h1>
   <p id="bio"></p>
   <h2>Posts</h2>
