@@ -12,47 +12,59 @@
 </head>
 <body>
   <a href="index.html">← Back to Posts</a>
+
   <div id="post"></div>
   <h3>Comments</h3>
   <div id="comments"></div>
 
   <script>
+    // ---- CONFIG ----
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+
+    // ---- LOAD POST ----
     const params = new URLSearchParams(window.location.search);
     const postId = params.get("id");
 
     async function loadPost() {
-      const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+        const data = await res.json();
 
-      if (!data || data.error) {
-        document.body.innerHTML = "<p>Post not found.</p>";
-        return;
-      }
+        if (!data || data.error || !data.post) {
+          document.body.innerHTML = "<p>Post not found.</p>";
+          console.error("Post not found:", data);
+          return;
+        }
 
-      const p = data.post;
-      const c = data.comments;
-
-      const postDiv = document.getElementById("post");
-      postDiv.innerHTML = `
-        <div class="post">
-          <h2>@${p.username}</h2>
-          <p>${p.message}</p>
-          <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
-        </div>
-      `;
-
-      const commentsDiv = document.getElementById("comments");
-      if (c.length === 0) {
-        commentsDiv.innerHTML = "<em>No comments yet.</em>";
-      } else {
-        commentsDiv.innerHTML = c.map(cm => `
-          <div class="comment">
-            <strong>User #${cm.userId}</strong><br>
-            ${cm.message}<br>
-            <span class="timestamp">${new Date(cm.timestamp).toLocaleString()}</span>
+        // === Render post ===
+        const p = data.post;
+        const postDiv = document.getElementById("post");
+        postDiv.innerHTML = `
+          <div class="post">
+            <h2>@${p.username}</h2>
+            <p>${p.message}</p>
+            <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
           </div>
-        `).join("");
+        `;
+
+        // === Render comments ===
+        const comments = data.comments || [];
+        const commentsDiv = document.getElementById("comments");
+        if (comments.length === 0) {
+          commentsDiv.innerHTML = "<em>No comments yet.</em>";
+        } else {
+          commentsDiv.innerHTML = comments.map(cm => `
+            <div class="comment">
+              <strong>@${cm.username}</strong><br>
+              ${cm.comment}<br>
+              <span class="timestamp">${new Date(cm.timestamp).toLocaleString()}</span>
+            </div>
+          `).join("");
+        }
+
+      } catch (err) {
+        console.error("Error loading post:", err);
+        document.body.innerHTML = "<p>Error loading post.</p>";
       }
     }
 
