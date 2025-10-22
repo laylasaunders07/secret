@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Post</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    .post { margin-bottom: 40px; }
+    .comment { border-top: 1px solid #ccc; padding: 10px 0; }
+    .timestamp { font-size: 0.8em; color: #777; }
+  </style>
+</head>
+<body>
+  <a href="index.html">← Back to Posts</a>
+  <div id="post"></div>
+  <h3>Comments</h3>
+  <div id="comments"></div>
+
+  <script>
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get("id");
+
+    async function loadPost() {
+      const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+      const data = await res.json();
+
+      if (!data || data.error) {
+        document.body.innerHTML = "<p>Post not found.</p>";
+        return;
+      }
+
+      const p = data.post;
+      const c = data.comments;
+
+      const postDiv = document.getElementById("post");
+      postDiv.innerHTML = `
+        <div class="post">
+          <h2>@${p.username}</h2>
+          <p>${p.message}</p>
+          <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
+        </div>
+      `;
+
+      const commentsDiv = document.getElementById("comments");
+      if (c.length === 0) {
+        commentsDiv.innerHTML = "<em>No comments yet.</em>";
+      } else {
+        commentsDiv.innerHTML = c.map(cm => `
+          <div class="comment">
+            <strong>User #${cm.userId}</strong><br>
+            ${cm.message}<br>
+            <span class="timestamp">${new Date(cm.timestamp).toLocaleString()}</span>
+          </div>
+        `).join("");
+      }
+    }
+
+    loadPost();
+  </script>
+</body>
+</html>
