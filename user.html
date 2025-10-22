@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    .post { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <a href="users.html">← Back to users</a>
+  <h1 id="username"></h1>
+  <p id="bio"></p>
+  <h2>Posts</h2>
+  <div id="posts"></div>
+
+  <script>
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    async function loadProfile() {
+      if (!id) {
+        document.body.innerHTML = "<p>User ID not provided.</p>";
+        return;
+      }
+
+      const res = await fetch(`${API_URL}?type=user&id=${id}`);
+      const data = await res.json();
+
+      if (data.error) {
+        document.body.innerHTML = `<p>${data.error}</p>`;
+        return;
+      }
+
+      document.getElementById("username").textContent = `${data.user.name} (@${data.user.username})`;
+      document.getElementById("bio").textContent = data.user.bio || "No bio provided.";
+
+      const postsContainer = document.getElementById("posts");
+      postsContainer.innerHTML = data.posts.length
+        ? data.posts.map(p => `
+            <div class="post">
+              <p>${p.message}</p>
+              <small>${new Date(p.timestamp).toLocaleString()}</small>
+            </div>
+          `).join("")
+        : "<p>No posts yet.</p>";
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
