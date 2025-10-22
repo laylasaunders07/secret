@@ -68,7 +68,12 @@
       await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message, key: SECRET_KEY })
+        body: JSON.stringify({
+          key: SECRET_KEY,
+          action: "post",
+          name,
+          message
+        })
       });
 
       // Reset form + UI
