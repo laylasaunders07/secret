@@ -40,18 +40,18 @@
       const div = document.createElement("div");
       div.className = "message";
 
-      // Build HTML (inline username, name + username same line)
+      // Build HTML (inline , name + username same line)
       div.innerHTML = `
-        <div>
-          <strong>${msg.username}</strong>
-          <a href="user.html?id=${msg.userId || msg.username}&from=index.html"
-             onclick="event.stopPropagation();"
-             style="color:#1976d2; text-decoration:none; cursor:pointer;">
-             @${msg.username}
+        <div class="post-header" style="cursor: default;">
+          <strong>${msg.name || "Unknown User"}</strong>
+          <a href="user.html?username=${encodeURIComponent(msg.username)}" style="color: #007bff; text-decoration: none;">
+            @${msg.username}
           </a>
         </div>
-        <div style="margin:6px 0;">${msg.message}</div>
-        <small class="timestamp">${new Date(msg.timestamp).toLocaleString()}</small>
+        <div class="post-message" style="cursor: pointer;" onclick="window.location.href='post.html?id=${msg.id}'">
+          ${msg.message}
+        </div>
+        <small style="color: gray;">${new Date(msg.timestamp).toLocaleString()}</small>
       `;
 
       // Make clicking anywhere else on post open it
