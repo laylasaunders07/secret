@@ -62,7 +62,8 @@
       loading.style.display = "inline";
 
       const name = document.getElementById("name").value.trim();
-      const message = document.getElementById("message").value.trim();
+      const messageInput = document.getElementById("message");
+      const messageText = messageInput.value.trim();
 
       // Send to Google Apps Script
       const user = JSON.parse(localStorage.getItem("user") || "null");
