@@ -14,8 +14,8 @@
   <a id="backLink" href="#">← Back</a>
     <script>
       // Determine the referrer from the query string
-      const params = new URLSearchParams(window.location.search);
-      const from = params.get("from") || "index.html";
+      const URLparams = new URLSearchParams(window.location.search);
+      const from = URLparams.get("from") || "index.html";
       document.getElementById("backLink").href = from;
     </script>
 
