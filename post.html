@@ -24,57 +24,59 @@
   <div id="comments"></div>
 
   <script>
-    // ---- CONFIG ----
-    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get("id");
 
-    // ---- LOAD POST ----
-    const params = new URLSearchParams(window.location.search);
-    const postId = params.get("id");
+  async function loadPost() {
+    const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+    const data = await res.json();
 
-    async function loadPost() {
-      try {
-        const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-        const data = await res.json();
-
-        if (!data || data.error || !data.post) {
-          document.body.innerHTML = "<p>Post not found.</p>";
-          console.error("Post not found:", data);
-          return;
-        }
-
-        // === Render post ===
-        const p = data.post;
-        const postDiv = document.getElementById("post");
-        postDiv.innerHTML = `
-          <div class="post">
-            <h2>@${p.username}</h2>
-            <p>${p.message}</p>
-            <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
-          </div>
-        `;
-
-        // === Render comments ===
-        const comments = data.comments || [];
-        const commentsDiv = document.getElementById("comments");
-        if (comments.length === 0) {
-          commentsDiv.innerHTML = "<em>No comments yet.</em>";
-        } else {
-          commentsDiv.innerHTML = comments.map(cm => `
-            <div class="comment">
-              <strong>@${cm.username}</strong><br>
-              ${cm.comment}<br>
-              <span class="timestamp">${new Date(cm.timestamp).toLocaleString()}</span>
-            </div>
-          `).join("");
-        }
-
-      } catch (err) {
-        console.error("Error loading post:", err);
-        document.body.innerHTML = "<p>Error loading post.</p>";
-      }
+    if (!data || data.error) {
+      document.body.innerHTML = "<p>Post not found.</p>";
+      return;
     }
 
-    loadPost();
-  </script>
+    const p = data.post;
+    const c = data.comments;
+
+    // --- Render main post ---
+    const postDiv = document.getElementById("post");
+    postDiv.innerHTML = `
+      <div class="post" style="margin-bottom: 40px;">
+        <div class="post-header" style="cursor: default;">
+          <strong>${p.name || "Unknown User"}</strong>
+          <a href="user.html?username=${encodeURIComponent(p.username)}" style="color: #007bff; text-decoration: none;">
+            @${p.username}
+          </a>
+        </div>
+        <div class="post-message" style="cursor: default;">${p.message}</div>
+        <small style="color: gray;">${new Date(p.timestamp).toLocaleString()}</small>
+      </div>
+    `;
+
+    // --- Render comments ---
+    const commentsDiv = document.getElementById("comments");
+    if (!c || c.length === 0) {
+      commentsDiv.innerHTML = "<em>No comments yet.</em>";
+      return;
+    }
+
+    commentsDiv.innerHTML = c.map(cm => `
+      <div class="comment" style="border-top: 1px solid #ddd; padding: 10px 0;">
+        <div class="post-header" style="cursor: default;">
+          <strong>${cm.name || "Unknown User"}</strong>
+          <a href="user.html?username=${encodeURIComponent(cm.username)}" style="color: #007bff; text-decoration: none;">
+            @${cm.username}
+          </a>
+        </div>
+        <div class="post-message" style="cursor: default;">${cm.comment}</div>
+        <small style="color: gray;">${new Date(cm.timestamp).toLocaleString()}</small>
+      </div>
+    `).join("");
+  }
+
+  loadPost();
+</script>
 </body>
 </html>
