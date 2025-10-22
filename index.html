@@ -25,77 +25,90 @@
   <div id="messages"></div>
 
   <script>
-    // --- CONFIGURATION ---
-    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";   // Replace with your Apps Script web app URL
-    const SECRET_KEY = "alva-the-fortnite-god";    // Must match the key in Apps Script
+  // --- CONFIGURATION ---
+  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+  const SECRET_KEY = "alva-the-fortnite-god";
 
-    // --- UTILITIES ---
+  // --- UTILITIES ---
 
-    // Load and display all messages
-    async function loadMessages() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      const container = document.getElementById("messages");
-      container.innerHTML = "";
+  async function loadMessages() {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    const container = document.getElementById("messages");
+    container.innerHTML = "";
 
-      // Show newest first
-      data.reverse().forEach(msg => {
-        const div = document.createElement("div");
-        div.className = "message";
-        div.innerHTML = `
-          <strong><a href="post.html?id=${msg.id}">@${msg.username}</a></strong>: 
-          ${msg.message}<br>
-          <small>${new Date(msg.timestamp).toLocaleString()}</small>
-        `;
-        container.appendChild(div);
-      });
-    }
+    // Show newest first
+    data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    // --- FORM HANDLER ---
-    const form = document.getElementById("form");
-    const loading = document.getElementById("loading");
-    const button = form.querySelector("button");
+    data.forEach(msg => {
+      const div = document.createElement("div");
+      div.className = "message";
+      div.style.cursor = "pointer";
 
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      // Disable while sending + show loading text
-      button.disabled = true;
-      loading.style.display = "inline";
-
-      const messageInput = document.getElementById("message");
-      const messageText = messageInput.value.trim();
-
-      // Send to Google Apps Script
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      if (!user) {
-        alert("You must be logged in to post!");
-        return;
-      }
-      
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key: SECRET_KEY,
-          action: "post",
-          name: user.username,
-          message: messageText
-        })
+      // Make entire post clickable → goes to post.html
+      div.addEventListener("click", () => {
+        window.location.href = `post.html?id=${msg.id}`;
       });
 
-      // Reset form + UI
-      form.reset();
+      // Inner structure
+      div.innerHTML = `
+        <div style="margin-bottom: 4px;">
+          <strong>${msg.name || "Unknown"}</strong><br>
+          <a href="user.html?id=${msg.userId}" onclick="event.stopPropagation();" style="color:#1976d2; text-decoration:none;">@${msg.username}</a>
+        </div>
+        <div style="margin:6px 0;">${msg.message}</div>
+        <small class="timestamp">${new Date(msg.timestamp).toLocaleString()}</small>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  // --- FORM HANDLER ---
+  const form = document.getElementById("form");
+  const loading = document.getElementById("loading");
+  const button = form.querySelector("button");
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    // Disable while sending + show loading text
+    button.disabled = true;
+    loading.style.display = "inline";
+
+    const messageInput = document.getElementById("message");
+    const messageText = messageInput.value.trim();
+
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (!user) {
+      alert("You must be logged in to post!");
       button.disabled = false;
       loading.style.display = "none";
-      alert("Post published!");
+      return;
+    }
 
-      // Refresh message list
-      loadMessages();
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: SECRET_KEY,
+        action: "post",
+        name: user.username,
+        message: messageText
+      })
     });
 
-    // Load messages on page load
+    // Reset form + UI
+    form.reset();
+    button.disabled = false;
+    loading.style.display = "none";
+    alert("Post published!");
+
     loadMessages();
-  </script>
+  });
+
+  // Load messages on page load
+  loadMessages();
+</script>
 </body>
 </html>
