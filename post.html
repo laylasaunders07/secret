@@ -46,7 +46,7 @@
       <div class="post" style="margin-bottom: 40px;">
         <div class="post-header" style="cursor: default;">
           <strong>${p.name || "Unknown User"}</strong>
-          <a href="user.html?username=${encodeURIComponent(p.username)}" style="color: #007bff; text-decoration: none;">
+          <a href="user.html?id=${p.userId}" style="color: #007bff; text-decoration: none;">
             @${p.username}
           </a>
         </div>
@@ -66,7 +66,7 @@
       <div class="comment" style="border-top: 1px solid #ddd; padding: 10px 0;">
         <div class="post-header" style="cursor: default;">
           <strong>${cm.name || "Unknown User"}</strong>
-          <a href="user.html?username=${encodeURIComponent(cm.username)}" style="color: #007bff; text-decoration: none;">
+          <a href="user.html?id=${cm.userId}" style="color: #007bff; text-decoration: none;">
             @${cm.username}
           </a>
         </div>
