@@ -29,6 +29,9 @@
   const postId = urlParams.get("id");
 
   async function loadPost() {
+    console.log("Fetching post from:", `${API_URL}?type=post&id=${postId}`);
+    console.log("API_URL:", API_URL);
+    console.log("postId:", postId);
     const res = await fetch(`${API_URL}?type=post&id=${postId}`);
     const data = await res.json();
 
