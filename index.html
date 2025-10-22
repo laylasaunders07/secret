@@ -65,14 +65,20 @@
       const message = document.getElementById("message").value.trim();
 
       // Send to Google Apps Script
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      if (!user) {
+        alert("You must be logged in to post!");
+        return;
+      }
+      
       await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           key: SECRET_KEY,
           action: "post",
-          name,
-          message
+          name: user.username,
+          message: messageText
         })
       });
 
