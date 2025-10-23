@@ -4,28 +4,45 @@
   <meta charset="UTF-8" />
   <title>Post</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+  body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
+  a { color: #007bff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
 
-    /* Main post styling */
-    .post-main {
-      background: #e3f2fd;
-      padding: 1em;
-      margin: 1em 0;
-      border-radius: 10px;
-      cursor: default;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .post-main .post-message { font-size: 1.1em; margin-bottom: 0.5em; }
+  /* Main post styling */
+  .post-main {
+    background: #e3f2fd;
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 10px;
+    cursor: default;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .post-main .post-header {
+    font-size: 1.2em; /* larger */
+    margin-bottom: 0.5em;
+  }
+  .post-main .post-header a {
+    font-size: 1em; /* slightly smaller than name */
+    margin-left: 0.5em;
+    font-weight: normal;
+  }
+  .post-main .post-message { font-size: 1.1em; margin-bottom: 0.5em; }
 
-    /* Comment styling */
-    .comment { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: default; }
-    .post-header { margin-bottom: 0.3em; }
-    .post-message { margin-bottom: 0.3em; }
-    small { color: gray; font-size: 0.85em; }
-    input { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
-  </style>
+  /* Comment styling */
+  .comment { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: default; }
+  .comment .post-header {
+    font-size: 1.1em; /* slightly bigger than before */
+    margin-bottom: 0.3em;
+  }
+  .comment .post-header a {
+    font-size: 0.95em;
+    margin-left: 0.3em;
+    font-weight: normal;
+  }
+  .post-message { margin-bottom: 0.3em; }
+  small { color: gray; font-size: 0.85em; }
+  input { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
+</style>
 </head>
 <body>
   <a id="backLink" href="#">← Back</a>
@@ -69,7 +86,7 @@
       postDiv.innerHTML = `
         <div class="post-main">
           <div class="post-header">
-            <h2>${p.name || "Unknown User"}</h2>
+            <strong>${p.name || "Unknown User"}</strong>
             <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
           </div>
           <div class="post-message">${p.message}</div>
