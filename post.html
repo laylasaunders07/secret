@@ -4,89 +4,100 @@
   <meta charset="UTF-8" />
   <title>Post</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .post { margin-bottom: 40px; }
-    .comment { border-top: 1px solid #ccc; padding: 10px 0; }
-    .timestamp { font-size: 0.8em; color: #777; }
+    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
+    a { color: #007bff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .post, .comment { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: default; }
+    .post-header { margin-bottom: 0.3em; }
+    .post-message { margin-bottom: 0.3em; }
+    small { color: gray; font-size: 0.85em; }
+    input { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
   <a id="backLink" href="#">← Back</a>
-    <script>
-      // Determine the referrer from the query string
-      const URLparams = new URLSearchParams(window.location.search);
-      const from = URLparams.get("from") || "index.html";
-      document.getElementById("backLink").href = from;
-    </script>
+  <script>
+    const URLparams = new URLSearchParams(window.location.search);
+    const from = URLparams.get("from") || "index.html";
+    document.getElementById("backLink").href = from;
+  </script>
 
   <div id="post"></div>
+
   <h3>Comments</h3>
+  <input type="text" id="searchComments" placeholder="Search comments..." oninput="filterComments()">
   <div id="comments"></div>
 
   <script>
-  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-  const urlParams = new URLSearchParams(window.location.search);
-  const postId = urlParams.get("id");
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get("id");
+    let allComments = [];
 
-  async function loadPost() {
-    
-    //console.log("Fetching post from:", `${API_URL}?type=post&id=${postId}`);
-    //console.log("API_URL:", API_URL);
-    //console.log("postId:", postId);
-    
-    const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-    
-    //console.log("Response status:", res.status);
-    //const text = await res.text();
-    //console.log("Raw response text:", text);
-    
-    const data = await res.json();
+    async function loadPost() {
+      if (!postId) {
+        document.body.innerHTML = "<p>Post ID not provided.</p>";
+        return;
+      }
 
-    if (!data || data.error) {
-      document.body.innerHTML = "<p>Post not found.</p>";
-      return;
+      const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+      const data = await res.json();
+
+      if (!data || data.error) {
+        document.body.innerHTML = "<p>Post not found.</p>";
+        return;
+      }
+
+      const p = data.post;
+      allComments = data.comments || [];
+
+      // --- Render main post ---
+      const postDiv = document.getElementById("post");
+      postDiv.innerHTML = `
+        <div class="post">
+          <div class="post-header">
+            <strong>${p.name || "Unknown User"}</strong>
+            <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
+          </div>
+          <div class="post-message">${p.message}</div>
+          <small>${new Date(p.timestamp).toLocaleString()}</small>
+        </div>
+      `;
+
+      renderComments(allComments);
     }
 
-    const p = data.post;
-    const c = data.comments;
+    function renderComments(comments) {
+      const commentsDiv = document.getElementById("comments");
+      if (!comments || comments.length === 0) {
+        commentsDiv.innerHTML = "<em>No comments yet.</em>";
+        return;
+      }
 
-    // --- Render main post ---
-    const postDiv = document.getElementById("post");
-    postDiv.innerHTML = `
-      <div class="post" style="margin-bottom: 40px;">
-        <div class="post-header" style="cursor: default;">
-          <strong>${p.name || "Unknown User"}</strong>
-          <a href="user.html?id=${p.userId}&from=index.html?id=${p.userId}" style="color: #007bff; text-decoration: none;">
-            @${p.username}
-          </a>
+      commentsDiv.innerHTML = comments.map(cm => `
+        <div class="comment">
+          <div class="post-header">
+            <strong>${cm.name || "Unknown User"}</strong>
+            <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
+          </div>
+          <div class="post-message">${cm.comment}</div>
+          <small>${new Date(cm.timestamp).toLocaleString()}</small>
         </div>
-        <div class="post-message" style="cursor: default;">${p.message}</div>
-        <small style="color: gray;">${new Date(p.timestamp).toLocaleString()}</small>
-      </div>
-    `;
-
-    // --- Render comments ---
-    const commentsDiv = document.getElementById("comments");
-    if (!c || c.length === 0) {
-      commentsDiv.innerHTML = "<em>No comments yet.</em>";
-      return;
+      `).join("");
     }
 
-    commentsDiv.innerHTML = c.map(cm => `
-      <div class="comment" style="border-top: 1px solid #ddd; padding: 10px 0;">
-        <div class="post-header" style="cursor: default;">
-          <strong>${cm.name || "Unknown User"}</strong>
-          <a href="user.html?id=${cm.userId}&from=${encodeURIComponent(location.pathname)}" style="color: #007bff; text-decoration: none;">
-            @${cm.username}
-          </a>
-        </div>
-        <div class="post-message" style="cursor: default;">${cm.comment}</div>
-        <small style="color: gray;">${new Date(cm.timestamp).toLocaleString()}</small>
-      </div>
-    `).join("");
-  }
+    function filterComments() {
+      const term = document.getElementById("searchComments").value.toLowerCase();
+      const filtered = allComments.filter(cm =>
+        (cm.username || "").toLowerCase().includes(term) ||
+        (cm.name || "").toLowerCase().includes(term) ||
+        (cm.comment || "").toLowerCase().includes(term)
+      );
+      renderComments(filtered);
+    }
 
-  loadPost();
-</script>
+    loadPost();
+  </script>
 </body>
 </html>
