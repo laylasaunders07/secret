@@ -4,6 +4,23 @@
   <meta charset="UTF-8" />
   <title>Home</title>
   <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      max-width: 600px;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    h1, h3 {
+      margin-top: 1em;
+    }
+
     /* Blue card for post box / login prompt */
     .post-card {
       background: #e3f2fd;
@@ -12,58 +29,68 @@
       margin-bottom: 1.5em;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
-    
-    /* Textarea fully blends with card — no border, no box look */
-    .post-card textarea {
-      background: transparent;
-      border: none;
+
+    textarea {
       width: 100%;
-      padding: 0.6em 0;
-      resize: none;
+      padding: 0.6em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
       min-height: 80px;
-      font-size: 1em;
-      font-family: inherit;
-      outline: none;
-      color: #000;
     }
-    
-    /* Keep post button clean and aligned */
-    .post-card button {
-      margin-top: 0.5em;
+
+    button {
+      padding: 0.6em 1.2em;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #1976d2;
       color: white;
-      font-weight: 500;
-      padding: 0.6em 1.4em;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-    
-    .post-card button:hover {
-      background: #1565c0;
-    }
-    
-    .post-card button:disabled {
+
+    button:disabled {
       background: #90caf9;
       cursor: not-allowed;
     }
-    
-    /* Posts feed styling restored */
+
+    .loading {
+      display: none;
+      color: #1976d2;
+      font-weight: bold;
+      margin-left: 0.5em;
+    }
+
+    #search {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0 1em 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    /* Posts feed */
     .message {
       background: #f5f5f5;
       padding: 0.6em;
       margin: 0.5em 0;
       border-radius: 6px;
-      transition: background 0.2s ease;
     }
-    
+
+    .post-header {
+      font-weight: bold;
+    }
+
+    small {
+      color: gray;
+    }
+
     /* Hover highlight for all cards */
     .post:hover,
     .message:hover,
     .user:hover,
     .comment:hover {
       background: #e3f2fd !important;
+      transition: background 0.2s ease;
     }
   </style>
 </head>
