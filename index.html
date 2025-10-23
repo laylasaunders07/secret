@@ -25,14 +25,16 @@
     .post-card {
       background: #e3f2fd;
       border-radius: 12px;
-      padding: 1em;
+      padding: 0.75em 1em;
       margin-bottom: 1.5em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       display: flex;
-      align-items: center;
+      align-items: center;          /* vertical centering */
+      justify-content: space-between; /* textarea left, button right */
       gap: 0.6em;
     }
     
-    /* Textarea: no border, same background, full width */
+    /* Textarea: fills available space, seamless */
     .post-card textarea {
       flex: 1;
       background: #e3f2fd;
@@ -42,10 +44,11 @@
       font-family: inherit;
       font-size: 1em;
       color: #333;
-      padding: 0.4em;
+      padding: 0.4em 0;
+      line-height: 1.4;
     }
     
-    /* Icon-only Post button (square) */
+    /* Icon-only button (square) */
     .post-card button {
       background: none;
       border: none;
@@ -56,6 +59,8 @@
       cursor: pointer;
       border-radius: 8px;
       transition: background 0.2s ease;
+      flex-shrink: 0; /* don’t resize */
+      align-self: center; /* vertical alignment tweak */
     }
     
     .post-card button:hover {
