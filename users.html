@@ -12,16 +12,21 @@
 </head>
 <body>
   <h1>All Users</h1>
+  <input type="text" id="searchUsers" placeholder="Search users..." oninput="filterUsers()">
   <div id="users"></div>
 
   <script>
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-
+    let allUsers = [];
+    
     async function loadUsers() {
       const res = await fetch(`${API_URL}?type=users`);
-      const users = await res.json();
+      allUsers = await res.json();
+      renderUsers(allUsers);
+    }
+    
+    function renderUsers(users) {
       const container = document.getElementById("users");
-
       container.innerHTML = users.map(u => `
         <div class="user">
           <strong>${u.name || u.username}</strong> 
@@ -30,7 +35,17 @@
         </div>
       `).join("");
     }
-
+    
+    function filterUsers() {
+      const term = document.getElementById("searchUsers").value.toLowerCase();
+      const filtered = allUsers.filter(u =>
+        (u.username || "").toLowerCase().includes(term) ||
+        (u.name || "").toLowerCase().includes(term) ||
+        (u.bio || "").toLowerCase().includes(term)
+      );
+      renderUsers(filtered);
+    }
+    
     loadUsers();
   </script>
 </body>
