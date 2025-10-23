@@ -42,7 +42,7 @@
       div.innerHTML = `
         <div class="post-header" style="cursor: default;">
           <strong>${msg.name || "Unknown User"}</strong>
-          <a href="user.html?id=${encodeURIComponent(msg.id)}&from=index.html" style="color: #007bff; text-decoration: none;">
+          <a href="user.html?id=${encodeURIComponent(msg.userId)}&from=index.html" style="color: #007bff; text-decoration: none;">
             @${msg.username}
           </a>
         </div>
