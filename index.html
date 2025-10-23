@@ -21,63 +21,37 @@
       margin-top: 1em;
     }
 
-    /* Blue card for post box / login prompt */
-    .post-card {
-      background: #e3f2fd;
-      border-radius: 12px;
-      padding: 1em;
-      margin-bottom: 1.5em;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-    
-    /* Make form a flex container */
-    .post-card form {
+    /* Square icon-only Post button */
+    .post-card button {
+      background: none;
+      border: none;
+      padding: 0.4em;
       display: flex;
       align-items: center;
-      gap: 0.75em;
-    }
-    
-    /* Textarea fills space but looks seamless */
-    .post-card textarea {
-      flex: 1;
-      background: transparent;
-      border: none;
-      padding: 0.6em 0;
-      resize: none;
-      min-height: 60px;
-      font-size: 1em;
-      font-family: inherit;
-      outline: none;
-      color: #000;
-    }
-    
-    /* Stylish post button — right aligned, centered */
-    .post-card button {
-      border: none;
-      border-radius: 8px;
-      background: #1976d2;
-      color: white;
-      font-weight: 500;
-      padding: 0.6em 1.4em;
+      justify-content: center;
       cursor: pointer;
-      align-self: center;
+      border-radius: 8px;
       transition: background 0.2s ease;
     }
     
     .post-card button:hover {
-      background: #1565c0;
+      background: rgba(25, 118, 210, 0.1);
     }
     
-    .post-card button:disabled {
-      background: #90caf9;
+    .post-card button svg {
+      width: 28px;
+      height: 28px;
+      fill: #1976d2;
+      transition: fill 0.2s ease;
+    }
+    
+    .post-card button:hover svg {
+      fill: #1565c0;
+    }
+    
+    .post-card button:disabled svg {
+      fill: #90caf9;
       cursor: not-allowed;
-    }
-    
-    /* Loading text inline with button */
-    .post-card .loading {
-      margin-left: 0.5em;
-      font-weight: 500;
-      color: #1976d2;
     }
     
     /* Posts feed styling */
@@ -179,7 +153,11 @@
       container.innerHTML = `
         <form id="form">
           <textarea id="message" placeholder="Share something..." required></textarea>
-          <button type="submit">Post</button>
+          <button type="submit" title="Post">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24" width="24">
+              <path d="M12 0a12 12 0 1 0 12 12A12 12 0 0 0 12 0Zm4.91 10.41A1 1 0 0 1 16 11h-2.25a0.25 0.25 0 0 0 -0.25 0.25v7.25a1.5 1.5 0 0 1 -3 0v-7.25a0.25 0.25 0 0 0 -0.25 -0.25H8a1 1 0 0 1 -0.75 -1.66l4 -4.5a1 1 0 0 1 1.5 0l4 4.5a1 1 0 0 1 0.16 1.07Z"></path>
+            </svg>
+          </button>
           <span id="loading" class="loading">Posting...</span>
         </form>
       `;
