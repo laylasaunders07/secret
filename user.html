@@ -4,21 +4,29 @@
   <meta charset="UTF-8">
   <title>User Profile</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .post { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
+    a { color: #007bff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    #backLink { display: inline-block; margin-bottom: 1em; }
+    #search { width: 100%; padding: 0.6em; margin: 0.5em 0 1em 0; border-radius: 6px; border: 1px solid #ccc; }
+    .post { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: pointer; }
+    .post-header { font-weight: bold; }
+    small { color: gray; }
   </style>
 </head>
 <body>
   <a id="backLink" href="#">← Back</a>
-    <script>
-      // Determine the referrer from the query string
-      const URLparams = new URLSearchParams(window.location.search);
-      const from = URLparams.get("from") || "index.html";
-      document.getElementById("backLink").href = from;
-    </script>
+  <script>
+    const URLparams = new URLSearchParams(window.location.search);
+    const from = URLparams.get("from") || "index.html";
+    document.getElementById("backLink").href = from;
+  </script>
 
   <h1 id="username"></h1>
   <p id="bio"></p>
+
+  <input type="text" id="search" placeholder="Search posts..." oninput="filterPosts()">
+
   <h2>Posts</h2>
   <div id="posts"></div>
 
@@ -26,6 +34,7 @@
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
+    let allPosts = [];
 
     async function loadProfile() {
       if (!id) {
@@ -44,15 +53,41 @@
       document.getElementById("username").textContent = `${data.user.name} (@${data.user.username})`;
       document.getElementById("bio").textContent = data.user.bio || "No bio provided.";
 
-      const postsContainer = document.getElementById("posts");
-      postsContainer.innerHTML = data.posts.length
-        ? data.posts.map(p => `
-            <div class="post">
-              <p>${p.message}</p>
-              <small>${new Date(p.timestamp).toLocaleString()}</small>
-            </div>
-          `).join("")
-        : "<p>No posts yet.</p>";
+      allPosts = data.posts || [];
+      renderPosts(allPosts);
+    }
+
+    function renderPosts(posts) {
+      const container = document.getElementById("posts");
+      if (!posts.length) {
+        container.innerHTML = "<p>No posts yet.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      posts.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `
+          <div class="post-header">@${p.username}</div>
+          <div class="post-message">${p.message}</div>
+          <small>${new Date(p.timestamp).toLocaleString()}</small>
+        `;
+        div.addEventListener("click", () => {
+          window.location.href = `post.html?id=${p.id}&from=user.html?id=${id}`;
+        });
+        container.appendChild(div);
+      });
+    }
+
+    function filterPosts() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const filtered = allPosts.filter(p =>
+        (p.message || "").toLowerCase().includes(term) ||
+        (p.username || "").toLowerCase().includes(term) ||
+        (p.name || "").toLowerCase().includes(term)
+      );
+      renderPosts(filtered);
     }
 
     loadProfile();
