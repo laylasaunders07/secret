@@ -58,19 +58,19 @@
     
     /* button: fixed size, right side, vertically centered */
     .post-card button {
-      flex-shrink: 0;             /* don't let button shrink */
+      flex-shrink: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 44px;                /* square button */
-      height: 44px;               /* same as width for square */
+      width: 44px;
+      height: 44px;
       background: none;
       border: none;
       padding: 0;
       border-radius: 8px;
       cursor: pointer;
-      align-self: center;         /* vertical centering fallback */
-      transition: background 0.12s ease;
+      align-self: center;
+      transition: background 0.12s ease, transform 0.3s ease;
     }
     
     /* hover effect for button */
@@ -78,18 +78,25 @@
       background: rgba(25,118,210,0.12);
     }
     
-    /* svg sizing + color */
+    /* svg icon base */
     .post-card button svg {
       width: 22px;
       height: 22px;
       fill: #1976d2;
+      transition: opacity 0.3s ease, transform 0.6s ease;
     }
-
-    /* Dim / disable visual when sending */
+    
+    /* loading (spinning + shaded) */
     .post-card button.loading svg {
-      opacity: 0.4;        /* visibly faded */
-      pointer-events: none;
+      opacity: 0.6;
       filter: grayscale(1);
+      animation: spin 0.6s linear infinite;
+    }
+    
+    /* spin animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
     
     /* loading text: also vertically centered and does not change card height */
@@ -198,35 +205,39 @@
     
       form.addEventListener("submit", async e => {
         e.preventDefault();
-    
-        button.disabled = true;
-        button.classList.add("loading");
-        
+      
+        const button = form.querySelector("button");
         const messageInput = document.getElementById("message");
         const messageText = messageInput.value.trim();
-        
+      
         if (!messageText) {
           alert("Please enter a message before posting.");
-          button.disabled = false;
-          button.classList.remove("loading");
           return;
         }
-        
-        await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            key: SECRET_KEY,
-            action: "post",
-            name: user.username,
-            message: messageText
-          })
-        });
-        
-        form.reset();
-        button.disabled = false;
-        button.classList.remove("loading");
-        loadMessages();
+      
+        // Start loading state (dim + spin)
+        button.disabled = true;
+        button.classList.add("loading");
+      
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              key: SECRET_KEY,
+              action: "post",
+              name: user.username,
+              message: messageText
+            })
+          });
+      
+          form.reset();
+          loadMessages();
+        } finally {
+          // End loading state
+          button.disabled = false;
+          button.classList.remove("loading");
+        }
       });
     }
 
