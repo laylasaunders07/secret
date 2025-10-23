@@ -96,6 +96,12 @@
       line-height: 1;
     }
 
+    /* loading hidden by default; JS shows it while posting */
+    .post-card .loading,
+    #loading {
+      display: none !important;
+    }
+
     #search {
       width: 100%;
       padding: 0.6em;
@@ -134,7 +140,7 @@
   <h1>Home</h1>
 
   <!-- Create Post / Login Prompt -->
-  <div id="createPostCard" class="post-card"></div>
+  <div id="createPostCard"></div>
 
   <!-- Search + Posts -->
   <h3>Posts</h3>
@@ -240,7 +246,6 @@
             </a>
           </div>
           <div class="post-message">${msg.message}</div>
-          </div>
           <small>${new Date(msg.timestamp).toLocaleString()}</small>
         `;
         div.addEventListener("click", e => {
