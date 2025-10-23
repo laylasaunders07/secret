@@ -20,7 +20,7 @@
     <button type="submit">Send</button>
     <span id="loading" class="loading">Sending...</span>
   </form>
-
+  <input type="text" id="search" placeholder="Search posts..." oninput="filterMessages()">
   <h2>Messages</h2>
   <div id="messages"></div>
 
@@ -106,6 +106,51 @@
   });
 
   loadMessages();
+    let allMessages = []; // keep full copy
+
+    async function loadMessages() {
+      const res = await fetch(API_URL);
+      allMessages = await res.json();
+      renderMessages(allMessages);
+    }
+    
+    function renderMessages(data) {
+      const container = document.getElementById("messages");
+      container.innerHTML = "";
+    
+      data.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message";
+        div.innerHTML = `
+          <div class="post-header" style="cursor: default;">
+            <strong>${msg.name || "Unknown User"}</strong>
+            <a href="user.html?id=${encodeURIComponent(msg.userId)}&from=index.html" style="color: #007bff; text-decoration: none;">
+              @${msg.username}
+            </a>
+          </div>
+          <div class="post-message" style="cursor: pointer;" onclick="window.location.href='post.html?id=${msg.id}'">
+            ${msg.message}
+          </div>
+          <small style="color: gray;">${new Date(msg.timestamp).toLocaleString()}</small>
+        `;
+        div.addEventListener("click", e => {
+          if (e.target.tagName.toLowerCase() !== "a") {
+            window.location.href = `post.html?id=${msg.id}&from=index.html`;
+          }
+        });
+        container.appendChild(div);
+      });
+    }
+    
+    function filterMessages() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const filtered = allMessages.filter(m =>
+        (m.message || "").toLowerCase().includes(term) ||
+        (m.username || "").toLowerCase().includes(term) ||
+        (m.name || "").toLowerCase().includes(term)
+      );
+      renderMessages(filtered);
+    }
 </script>
 </body>
 </html>
