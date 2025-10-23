@@ -25,7 +25,7 @@
       container.innerHTML = users.map(u => `
         <div class="user">
           <strong>${u.name || u.username}</strong> 
-          (<a href="user.html?id=${u.id}">@${u.username}</a>)<br>
+          (<a href="user.html?id=${u.id}&from=users.html">@${u.username}</a>)<br>
           <em>${u.bio || "No bio yet"}</em>
         </div>
       `).join("");
