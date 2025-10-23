@@ -29,26 +29,39 @@
       margin-bottom: 1.5em;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
-
-    textarea {
-      width: 100%;
-      padding: 0.6em;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    button {
-      padding: 0.6em 1.2em;
+    
+    /* Textarea fully blends with card — no border, no box look */
+    .post-card textarea {
+      background: transparent;
       border: none;
-      border-radius: 6px;
+      width: 100%;
+      padding: 0.6em 0;
+      resize: none;
+      min-height: 80px;
+      font-size: 1em;
+      font-family: inherit;
+      outline: none;
+      color: #000;
+    }
+    
+    /* Keep post button clean and aligned */
+    .post-card button {
+      margin-top: 0.5em;
+      border: none;
+      border-radius: 8px;
       background: #1976d2;
       color: white;
+      font-weight: 500;
+      padding: 0.6em 1.4em;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
-
-    button:disabled {
+    
+    .post-card button:hover {
+      background: #1565c0;
+    }
+    
+    .post-card button:disabled {
       background: #90caf9;
       cursor: not-allowed;
     }
