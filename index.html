@@ -2,122 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>test page</title>
+  <title>Home</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
-    input, textarea { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
-    button { padding: 0.6em 1.2em; border: none; border-radius: 6px; background: #1976d2; color: white; cursor: pointer; }
-    button:disabled { background: #90caf9; cursor: not-allowed; }
-    .message { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; }
-    .loading { display: none; color: #1976d2; font-weight: bold; }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      max-width: 600px;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    h1, h3 {
+      margin-top: 1em;
+    }
+
+    /* Blue card for post box / login prompt */
+    .post-card {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 1em;
+      margin-bottom: 1.5em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 0.6em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      padding: 0.6em 1.2em;
+      border: none;
+      border-radius: 6px;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #90caf9;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      color: #1976d2;
+      font-weight: bold;
+      margin-left: 0.5em;
+    }
+
+    #search {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0 1em 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    /* Posts feed */
+    .message {
+      background: #f5f5f5;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+    }
+
+    .post-header {
+      font-weight: bold;
+    }
+
+    small {
+      color: gray;
+    }
   </style>
 </head>
 <body>
-  <h1>laylas sigma tuff two way database tester in github pages NO ONE leak ts or i will be sad</h1>
+  <h1>Home</h1>
 
-  <form id="form">
-    <textarea id="message" placeholder="Your message..." required></textarea>
-    <button type="submit">Send</button>
-    <span id="loading" class="loading">Sending...</span>
-  </form>
+  <!-- Create Post / Login Prompt -->
+  <div id="createPostCard" class="post-card"></div>
+
+  <!-- Search + Posts -->
+  <h3>Posts</h3>
   <input type="text" id="search" placeholder="Search posts..." oninput="filterMessages()">
-  <h2>Messages</h2>
   <div id="messages"></div>
 
   <script>
-  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-  const SECRET_KEY = "alva-the-fortnite-god";
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const SECRET_KEY = "alva-the-fortnite-god";
+    let allMessages = [];
 
-  async function loadMessages() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    const container = document.getElementById("messages");
-    container.innerHTML = "";
+    // Initialize page
+    loadMessages();
+    setupPostCard();
 
-    data.forEach(msg => {
-      const div = document.createElement("div");
-      div.className = "message";
+    // --- RENDER POST CARD OR LOGIN PROMPT ---
+    function setupPostCard() {
+      const container = document.getElementById("createPostCard");
+      const user = JSON.parse(localStorage.getItem("user") || "null");
 
-      // Build HTML (inline , name + username same line)
-      div.innerHTML = `
-        <div class="post-header" style="cursor: default;">
-          <strong>${msg.name || "Unknown User"}</strong>
-          <a href="user.html?id=${encodeURIComponent(msg.userId)}&from=index.html" style="color: #007bff; text-decoration: none;">
-            @${msg.username}
-          </a>
-        </div>
-        <div class="post-message" style="cursor: pointer;" onclick="window.location.href='post.html?id=${msg.id}'">
-          ${msg.message}
-        </div>
-        <small style="color: gray;">${new Date(msg.timestamp).toLocaleString()}</small>
+      if (!user || !user.username) {
+        container.innerHTML = `
+          <div style="text-align:center;">
+            <p>You need to be logged in to post.</p>
+            <p>
+              <a href="login.html">Login</a> or
+              <a href="create.html">Create an Account</a>
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <form id="form">
+          <textarea id="message" placeholder="Share something..." required></textarea>
+          <button type="submit">Post</button>
+          <span id="loading" class="loading">Posting...</span>
+        </form>
       `;
 
-      // Make clicking anywhere else on post open it
-      div.addEventListener("click", (e) => {
-        // only navigate if the click wasn't on a link
-        if (e.target.tagName.toLowerCase() !== "a") {
-          window.location.href = `post.html?id=${msg.id}&from=index.html`;
+      const form = document.getElementById("form");
+      const loading = document.getElementById("loading");
+      const button = form.querySelector("button");
+
+      form.addEventListener("submit", async e => {
+        e.preventDefault();
+
+        button.disabled = true;
+        loading.style.display = "inline";
+
+        const messageInput = document.getElementById("message");
+        const messageText = messageInput.value.trim();
+
+        if (!messageText) {
+          alert("Please enter a message before posting.");
+          button.disabled = false;
+          loading.style.display = "none";
+          return;
         }
+
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            key: SECRET_KEY,
+            action: "post",
+            name: user.username,
+            message: messageText
+          })
+        });
+
+        form.reset();
+        button.disabled = false;
+        loading.style.display = "none";
+        loadMessages();
       });
-
-      container.appendChild(div);
-    });
-  }
-
-  // --- FORM HANDLER ---
-  const form = document.getElementById("form");
-  const loading = document.getElementById("loading");
-  const button = form.querySelector("button");
-
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-
-    button.disabled = true;
-    loading.style.display = "inline";
-
-    const messageInput = document.getElementById("message");
-    const messageText = messageInput.value.trim();
-
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    if (!user) {
-      alert("You must be logged in to post!");
-      button.disabled = false;
-      loading.style.display = "none";
-      return;
     }
 
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        key: SECRET_KEY,
-        action: "post",
-        name: user.username,
-        message: messageText
-      })
-    });
-
-    form.reset();
-    button.disabled = false;
-    loading.style.display = "none";
-    alert("Post published!");
-
-    loadMessages();
-  });
-
-  loadMessages();
-    let allMessages = []; // keep full copy
-
+    // --- LOAD & RENDER MESSAGES ---
     async function loadMessages() {
       const res = await fetch(API_URL);
       allMessages = await res.json();
       renderMessages(allMessages);
     }
-    
+
     function renderMessages(data) {
       const container = document.getElementById("messages");
       container.innerHTML = "";
-    
+
       data.forEach(msg => {
         const div = document.createElement("div");
         div.className = "message";
@@ -128,10 +190,10 @@
               @${msg.username}
             </a>
           </div>
-          <div class="post-message" style="cursor: pointer;" onclick="window.location.href='post.html?id=${msg.id}'">
+          <div class="post-message" style="cursor: pointer;" onclick="window.location.href='post.html?id=${msg.id}&from=index.html'">
             ${msg.message}
           </div>
-          <small style="color: gray;">${new Date(msg.timestamp).toLocaleString()}</small>
+          <small>${new Date(msg.timestamp).toLocaleString()}</small>
         `;
         div.addEventListener("click", e => {
           if (e.target.tagName.toLowerCase() !== "a") {
@@ -141,7 +203,7 @@
         container.appendChild(div);
       });
     }
-    
+
     function filterMessages() {
       const term = document.getElementById("search").value.toLowerCase();
       const filtered = allMessages.filter(m =>
@@ -151,6 +213,6 @@
       );
       renderMessages(filtered);
     }
-</script>
+  </script>
 </body>
 </html>
