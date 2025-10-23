@@ -9,11 +9,19 @@
     a:hover { text-decoration: underline; }
     #backLink { display: inline-block; margin-bottom: 1em; }
 
+    /* Profile card */
+    .profile-card {
+      background: #e3f2fd; /* same blue as post hover */
+      padding: 1em;
+      border-radius: 8px;
+      margin-bottom: 1em;
+    }
+
     /* Header */
     #username { font-size: 1.4em; margin-bottom: 0.2em; }
     #username a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
-
     #bio { font-size: 1.05em; margin-bottom: 0.5em; }
+    #dateCreated { font-size: 0.9em; margin-bottom: 0.5em; color: #555; }
 
     #search { width: 100%; padding: 0.6em; margin: 0.5em 0 1em 0; border-radius: 6px; border: 1px solid #ccc; }
 
@@ -33,6 +41,8 @@
 
     .post-message { margin: 0.5em 0; }
     small { color: gray; font-size: 0.85em; }
+
+    h2 { margin-top: 1em; font-size: 1.2em; } /* match comments header size */
   </style>
 </head>
 <body>
@@ -43,11 +53,14 @@
     document.getElementById("backLink").href = from;
   </script>
 
-  <h1 id="username"></h1>
-  <p id="bio"></p>
-  <p id="dateCreated"><em>Date joined: [placeholder]</em></p>
+  <!-- Profile card -->
+  <div class="profile-card">
+    <h1 id="username"></h1>
+    <p id="bio"></p>
+    <p id="dateCreated"><em>Date joined: [placeholder]</em></p>
+  </div>
 
-  <h2>Posts</h2>
+  <h3>Posts</h3>
   <input type="text" id="search" placeholder="Search posts..." oninput="filterPosts()">
   <div id="posts"></div>
 
@@ -74,7 +87,7 @@
       const user = data.user;
       document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
       document.getElementById("bio").textContent = user.bio || "No bio provided.";
-      document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`; // Add user.created later if desired
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`; // add user.created later if desired
 
       allPosts = data.posts || [];
       renderPosts(allPosts);
@@ -92,7 +105,10 @@
         const div = document.createElement("div");
         div.className = "post";
         div.innerHTML = `
-          <div class="post-header">@${p.username}</div>
+          <div class="post-header">
+            ${p.name || "Unknown User"} 
+            <a href="user.html?id=${p.userId}&from=user.html">@${p.username}</a>
+          </div>
           <div class="post-message">${p.message}</div>
           <small>${new Date(p.timestamp).toLocaleString()}</small>
         `;
