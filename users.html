@@ -1,109 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>All Users</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    h1, h3 { margin-bottom: 0.5em; }
-    #loggedInCard, .user-card {
-      background: #1976d2;
-      color: white;
-      padding: 1em;
-      border-radius: 8px;
-      margin-bottom: 1em;
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      max-width: 600px;
     }
-    .user-card { background: #f5f5f5; color: black; cursor: pointer; }
-    .user-card-header { font-weight: bold; font-size: 1.1em; margin-bottom: 0.3em; }
-    .user-card-header a { color: #007bff; text-decoration: none; margin-left: 0.3em; font-weight: normal; }
-    .user-card-header a:hover { text-decoration: underline; }
-    .user-bio { margin-bottom: 0.3em; }
-    .user-footer { font-size: 0.9em; color: gray; }
-    #search { width: 100%; padding: 0.6em; margin: 0.5em 0 1em 0; border-radius: 6px; border: 1px solid #ccc; }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    h1, h3 {
+      margin-top: 1em;
+    }
+
+    /* Logged-in user card */
+    .user-card {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 1em;
+      margin-bottom: 1.5em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .user-header {
+      font-size: 1.3em;
+      font-weight: 600;
+      margin-bottom: 0.25em;
+    }
+    .user-header a {
+      font-size: 1em;
+      font-weight: 400;
+      color: #007bff;
+    }
+    .user-bio {
+      margin: 0.5em 0;
+      font-size: 1em;
+      color: #333;
+    }
+    .user-followers {
+      font-size: 0.9em;
+      color: gray;
+    }
+
+    /* Users list */
+    #searchUsers {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0 1em 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .user {
+      background: #f5f5f5;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+    }
+    .user strong {
+      font-size: 1.05em;
+    }
+    .user small {
+      color: gray;
+    }
   </style>
 </head>
 <body>
   <h1>All Users</h1>
 
-  <!-- Logged-in user card -->
+  <!-- Logged-in user card (blue) -->
   <div id="loggedInCard"></div>
 
   <h3>Users</h3>
-  <input type="text" id="search" placeholder="Search users..." oninput="filterUsers()">
-  <div id="usersList"></div>
+  <input type="text" id="searchUsers" placeholder="Search users..." oninput="filterUsers()">
+  <div id="users"></div>
 
   <script>
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-    const loggedIn = JSON.parse(localStorage.getItem("user") || "null");
     let allUsers = [];
 
-    // --- Load logged-in user card ---
-    async function loadLoggedInCard() {
-      const container = document.getElementById("loggedInCard");
-      if (!loggedIn) {
-        container.innerHTML = `
-          <p>You are not logged in. 
-            <a href="login.html">Login</a> or 
-            <a href="create.html">Create Account</a>
-          </p>
-        `;
-        return;
-      }
-
-      // Fetch full user info by username
-      const res = await fetch(`${API_URL}?type=users`);
-      const users = await res.json();
-      const user = users.find(u => u.username === loggedIn.username);
-      if (!user) {
-        container.innerHTML = "<p>User info not found.</p>";
-        return;
-      }
-
-      container.innerHTML = `
-        <div class="user-card">
-          <div class="user-card-header">
-            ${user.name} 
-            <a href="user.html?id=${user.id}&from=users.html">@${user.username}</a>
-          </div>
-          <div class="user-bio">${user.bio || "No bio provided."}</div>
-          <div class="user-footer">Member since: ${user.date_created || "N/A"}</div>
-        </div>
-      `;
-    }
-
-    // --- Load all users ---
     async function loadUsers() {
       const res = await fetch(`${API_URL}?type=users`);
       allUsers = await res.json();
       renderUsers(allUsers);
+      loadLoggedInUser();
     }
 
     function renderUsers(users) {
-      const container = document.getElementById("usersList");
-      container.innerHTML = "";
+      const container = document.getElementById("users");
       if (!users.length) {
         container.innerHTML = "<p>No users found.</p>";
         return;
       }
 
-      users.forEach(u => {
-        const div = document.createElement("div");
-        div.className = "user-card";
-        div.innerHTML = `
-          <div class="user-card-header">
-            ${u.name} <a href="user.html?id=${u.id}&from=users.html">@${u.username}</a>
+      container.innerHTML = users.map(u => `
+        <div class="user">
+          <div><strong>${u.name || "Unknown User"}</strong> 
+            <a href="user.html?id=${u.id}&from=users.html">@${u.username}</a>
           </div>
           <div class="user-bio">${u.bio || "No bio yet"}</div>
-          <div class="user-footer">Followers: 0</div>
-        `;
-        container.appendChild(div);
-      });
+          <small>Followers: 0</small>
+        </div>
+      `).join("");
     }
 
     function filterUsers() {
-      const term = document.getElementById("search").value.toLowerCase();
+      const term = document.getElementById("searchUsers").value.toLowerCase();
       const filtered = allUsers.filter(u =>
         (u.username || "").toLowerCase().includes(term) ||
         (u.name || "").toLowerCase().includes(term) ||
@@ -112,7 +119,49 @@
       renderUsers(filtered);
     }
 
-    loadLoggedInCard();
+    async function loadLoggedInUser() {
+      const userData = JSON.parse(localStorage.getItem("user") || "null");
+      const container = document.getElementById("loggedInCard");
+
+      if (!userData || !userData.username) {
+        container.innerHTML = `
+          <div class="user-card" style="text-align:center;">
+            <p>No user is currently logged in.</p>
+            <p>
+              <a href="login.html">Login</a> or
+              <a href="create.html">Create an Account</a>
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      // Fetch full user info from backend
+      const res = await fetch(`${API_URL}?type=users`);
+      const users = await res.json();
+      const user = users.find(u => u.username === userData.username);
+
+      if (!user) {
+        container.innerHTML = `
+          <div class="user-card" style="text-align:center;">
+            <p>Couldn't find your user profile. Please <a href="login.html">log in again</a>.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="user-card">
+          <div class="user-header">
+            ${user.name || "Unknown User"} 
+            <a href="user.html?id=${user.id}&from=users.html">@${user.username}</a>
+          </div>
+          <div class="user-bio">${user.bio || "No bio yet."}</div>
+          <div class="user-followers">Followers: 0</div>
+        </div>
+      `;
+    }
+
     loadUsers();
   </script>
 </body>
