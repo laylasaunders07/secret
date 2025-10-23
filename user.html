@@ -8,10 +8,31 @@
     a { color: #007bff; text-decoration: none; }
     a:hover { text-decoration: underline; }
     #backLink { display: inline-block; margin-bottom: 1em; }
+
+    /* Header */
+    #username { font-size: 1.4em; margin-bottom: 0.2em; }
+    #username a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
+
+    #bio { font-size: 1.05em; margin-bottom: 0.5em; }
+
     #search { width: 100%; padding: 0.6em; margin: 0.5em 0 1em 0; border-radius: 6px; border: 1px solid #ccc; }
-    .post { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: pointer; }
-    .post-header { font-weight: bold; }
-    small { color: gray; }
+
+    /* Post styling consistent with home page */
+    .post {
+      background: #f5f5f5;
+      padding: 0.8em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .post:hover { background: #e3f2fd; }
+
+    .post-header { font-weight: bold; font-size: 1.1em; }
+    .post-header a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
+
+    .post-message { margin: 0.5em 0; }
+    small { color: gray; font-size: 0.85em; }
   </style>
 </head>
 <body>
@@ -24,10 +45,10 @@
 
   <h1 id="username"></h1>
   <p id="bio"></p>
-
-  <input type="text" id="search" placeholder="Search posts..." oninput="filterPosts()">
+  <p id="dateCreated"><em>Date joined: [placeholder]</em></p>
 
   <h2>Posts</h2>
+  <input type="text" id="search" placeholder="Search posts..." oninput="filterPosts()">
   <div id="posts"></div>
 
   <script>
@@ -50,8 +71,10 @@
         return;
       }
 
-      document.getElementById("username").textContent = `${data.user.name} (@${data.user.username})`;
-      document.getElementById("bio").textContent = data.user.bio || "No bio provided.";
+      const user = data.user;
+      document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
+      document.getElementById("bio").textContent = user.bio || "No bio provided.";
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`; // Add user.created later if desired
 
       allPosts = data.posts || [];
       renderPosts(allPosts);
