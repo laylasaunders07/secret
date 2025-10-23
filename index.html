@@ -21,76 +21,79 @@
       margin-top: 1em;
     }
 
+    /* post card container: use stretch so children fill height */
     .post-card {
       background: #e3f2fd;
       border-radius: 12px;
-      padding: 0.6em 0.8em;
+      padding: 0.6em 0.75em;      /* inner padding for the card */
       margin-bottom: 1.5em;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
       gap: 0.6em;
-      min-height: 70px;
-      box-shadow: none; /* clean, no shadow */
-    }
-    
-    /* Textarea should look like part of the card */
-    .post-card textarea {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      resize: none;
-      font-family: inherit;
-      font-size: 1em;
-      color: #333;
-      padding: 0;
-      margin: 0;
-      height: 100%;
-      line-height: 1.4;
+      align-items: stretch;       /* <--- important: lets textarea stretch vertically */
+      justify-content: space-between;
+      min-height: 56px;           /* compact height; will grow with textarea content */
+      box-shadow: none;           /* no shadow so textarea blends in */
       box-sizing: border-box;
     }
     
-    /* SVG icon-only button, flush right and vertically centered */
+    /* textarea: take all remaining space and stretch fully */
+    .post-card textarea {
+      flex: 1;                    /* take remaining width */
+      min-height: 44px;           /* minimum editable height */
+      height: 100%;               /* fill the card vertically */
+      align-self: stretch;        /* ensure full height inside flex container */
+      background: transparent;    /* visually blend with card */
+      border: none;               /* no border */
+      outline: none;
+      resize: none;               /* optional: disallow manual resize to preserve layout */
+      padding: 0;                 /* no internal padding so text aligns with card */
+      margin: 0;
+      line-height: 1.4;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #111;
+      box-sizing: border-box;
+      overflow: auto;             /* scroll if multiple lines exceed container */
+    }
+    
+    /* button: fixed size, right side, vertically centered */
     .post-card button {
-      background: none;
-      border: none;
-      display: flex;
+      flex-shrink: 0;             /* don't let button shrink */
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      width: 44px;                /* square button */
+      height: 44px;               /* same as width for square */
+      background: none;
+      border: none;
+      padding: 0;
       border-radius: 8px;
-      padding: 0.4em;
-      transition: background 0.2s ease;
-      flex-shrink: 0;
-      align-self: center;
+      cursor: pointer;
+      align-self: center;         /* vertical centering fallback */
+      transition: background 0.12s ease;
     }
     
+    /* hover effect for button */
     .post-card button:hover {
-      background: rgba(25, 118, 210, 0.15);
+      background: rgba(25,118,210,0.12);
     }
     
+    /* svg sizing + color */
     .post-card button svg {
-      width: 28px;
-      height: 28px;
+      width: 22px;
+      height: 22px;
       fill: #1976d2;
-      transition: fill 0.2s ease;
     }
     
-    .post-card button:hover svg {
-      fill: #1565c0;
-    }
-    
-    .post-card button:disabled svg {
-      fill: #90caf9;
-      cursor: not-allowed;
-    }
-    
-    .loading {
-      display: none;
+    /* loading text: also vertically centered and does not change card height */
+    .post-card .loading {
+      display: inline-block;
+      align-self: center;
+      margin-left: 0.6em;
       color: #1976d2;
-      font-weight: bold;
-      margin-left: 0.5em;
+      font-weight: 600;
+      font-size: 0.95rem;
+      line-height: 1;
     }
 
     #search {
