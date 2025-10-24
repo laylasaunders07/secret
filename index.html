@@ -100,8 +100,13 @@
     }
 
     .message {
-      position: relative;
-      padding-right: 3em; /* space for like button */
+      background: #f5f5f5;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
     .message .like-btn {
@@ -167,6 +172,43 @@
     .comment:hover {
       background: #e3f2fd !important;
       transition: background 0.2s ease;
+    }
+
+    .like-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0 2px 0 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.3s ease;
+    }
+    
+    .like-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .like-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #000; /* black */
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .like-btn.liked svg {
+      fill: #000;
+      transform: scale(1.1);
+    }
+    
+    .like-btn.loading svg {
+      opacity: 0.6;
+      animation: spin 0.6s linear infinite;
     }
   </style>
 </head>
@@ -270,7 +312,7 @@
 
     async function renderMessages(data) {
       const container = document.getElementById("messages");
-      container.innerHTML = "";
+      container. = "";
     
       const user = JSON.parse(localStorage.getItem("user") || "null");
       let likedPosts = [];
@@ -292,19 +334,21 @@
         const div = document.createElement("div");
         div.className = "message";
         div.innerHTML = `
-          <div class="post-header" style="cursor: default;">
-            <strong>${msg.name || "Unknown User"}</strong>
-            <a href="user.html?id=${encodeURIComponent(msg.userId)}&from=index.html" style="color: #007bff; text-decoration: none;">
-              @${msg.username}
-            </a>
+          <div class="post-content">
+            <div class="post-header">
+              <strong>${msg.name || "Unknown User"}</strong>
+              <a href="user.html?id=${encodeURIComponent(msg.userId)}&from=index.html">
+                @${msg.username}
+              </a>
+            </div>
+            <div class="post-message">${msg.message}</div>
+            <small>${new Date(msg.timestamp).toLocaleString()}</small>
           </div>
-          <div class="post-message">${msg.message}</div>
-          <small>${new Date(msg.timestamp).toLocaleString()}</small>
-          <div style="display:flex; justify-content:flex-end; align-items:center;">
-            <button class="like-btn" title="Like" data-postid="${msg.id}">
-              ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
-            </button>
-          </div>
+          <button class="like-btn" data-postid="${msg.id}" title="Like">
+            <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">
+              <path d="M13.7499 4.94124c-0.0233 -1.58206 -0.919 -3.14007 -2.2971 -3.78222 -0.7003 -0.326348 -1.51249 -0.407627 -2.35948 -0.13877 -0.70546 0.22393 -1.41202 0.68288 -2.09333 1.40446 -0.68131 -0.72158 -1.38786 -1.18053 -2.09333 -1.40446 -0.84699 -0.268857 -1.65918 -0.187578 -2.35952 0.13877C1.1691 1.80117 0.273441 3.35918 0.250055 4.94124L0.25 4.94123v0.0074c0 2.30748 1.37229 4.35177 2.82563 5.78657 0.73363 0.7242 1.50803 1.3137 2.18354 1.7253 0.33755 0.2056 0.65713 0.371 0.94028 0.4865 0.2705 0.1104 0.55272 0.1943 0.80054 0.1943 0.24782 0 0.53004 -0.0839 0.80054 -0.1943 0.28315 -0.1155 0.60273 -0.2809 0.94028 -0.4865 0.67552 -0.4116 1.44989 -1.0011 2.18359 -1.7253C12.3777 9.3004 13.75 7.25611 13.75 4.94863h0.0001l-0.0002 -0.00739Z"></path>
+            </svg>
+          </button>
         `;
     
         // 👇 Clicking anywhere (except button) opens post
