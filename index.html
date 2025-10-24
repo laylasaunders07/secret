@@ -261,8 +261,10 @@
     }
 
     document.addEventListener("click", async (e) => {
+      // ✅ Handle Like button clicks only
       if (e.target.classList.contains("like-btn")) {
-        e.stopPropagation(); // Prevent opening post
+        e.preventDefault();     // stop default button behavior
+        e.stopPropagation();    // stop post redirect
     
         const user = JSON.parse(localStorage.getItem("user") || "null");
         if (!user || !user.username) {
@@ -289,8 +291,10 @@
             alert(result.error);
           } else if (result.message === "Already liked") {
             alert("You’ve already liked this post.");
-          } else {
+          } else if (result.success) {
             alert("Liked!");
+          } else {
+            alert("Unexpected response.");
           }
         } catch (err) {
           alert("Failed to like post: " + err.message);
