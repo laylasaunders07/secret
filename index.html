@@ -312,7 +312,7 @@
 
     async function renderMessages(data) {
       const container = document.getElementById("messages");
-      container. = "";
+      container.innerHTML = "";
     
       const user = JSON.parse(localStorage.getItem("user") || "null");
       let likedPosts = [];
