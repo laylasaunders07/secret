@@ -234,7 +234,7 @@
     function renderMessages(data) {
       const container = document.getElementById("messages");
       container.innerHTML = "";
-
+    
       data.forEach(msg => {
         const div = document.createElement("div");
         div.className = "message";
@@ -251,11 +251,54 @@
             <button class="like-btn" data-postid="${msg.id}">❤️ Like</button>
           </div>
         `;
+    
+        // 👇 Clicking anywhere (except button) opens post
         div.addEventListener("click", e => {
+          if (e.target.closest(".like-btn")) return; // ⛔ ignore button clicks
           if (e.target.tagName.toLowerCase() !== "a") {
             window.location.href = `post.html?id=${msg.id}&from=index.html`;
           }
         });
+    
+        // 👇 Button click logic
+        const likeButton = div.querySelector(".like-btn");
+        likeButton.addEventListener("click", async (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // stop post navigation
+    
+          const user = JSON.parse(localStorage.getItem("user") || "null");
+          if (!user || !user.username) {
+            alert("You need to be logged in to like posts.");
+            return;
+          }
+    
+          try {
+            const res = await fetch(API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                key: SECRET_KEY,
+                action: "like",
+                postId: msg.id,
+                username: user.username
+              })
+            });
+    
+            const result = await res.json();
+            if (result.error) {
+              alert(result.error);
+            } else if (result.message === "Already liked") {
+              alert("You’ve already liked this post.");
+            } else if (result.success) {
+              alert("Liked!");
+            } else {
+              alert("Unexpected response.");
+            }
+          } catch (err) {
+            alert("Failed to like post: " + err.message);
+          }
+        });
+    
         container.appendChild(div);
       });
     }
