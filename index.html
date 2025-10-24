@@ -303,48 +303,6 @@
       });
     }
 
-    document.addEventListener("click", async (e) => {
-      // ✅ Handle Like button clicks only
-      if (e.target.classList.contains("like-btn")) {
-        e.preventDefault();     // stop default button behavior
-        e.stopPropagation();    // stop post redirect
-    
-        const user = JSON.parse(localStorage.getItem("user") || "null");
-        if (!user || !user.username) {
-          alert("You need to be logged in to like posts.");
-          return;
-        }
-    
-        const postId = e.target.dataset.postid;
-    
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              key: SECRET_KEY,
-              action: "like",
-              postId,
-              username: user.username
-            })
-          });
-    
-          const result = await res.json();
-          if (result.error) {
-            alert(result.error);
-          } else if (result.message === "Already liked") {
-            alert("You’ve already liked this post.");
-          } else if (result.success) {
-            alert("Liked!");
-          } else {
-            alert("Unexpected response.");
-          }
-        } catch (err) {
-          alert("Failed to like post: " + err.message);
-        }
-      }
-    });
-
     function filterMessages() {
       const term = document.getElementById("search").value.toLowerCase();
       const filtered = allMessages.filter(m =>
