@@ -99,6 +99,45 @@
       to { transform: rotate(360deg); }
     }
 
+    .message {
+      position: relative;
+      padding-right: 3em; /* space for like button */
+    }
+    
+    .message .like-btn {
+      position: absolute;
+      top: 50%;
+      right: 0.6em;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.3s ease;
+    }
+    
+    .message .like-btn:hover {
+      background: rgba(25,118,210,0.12);
+    }
+    
+    .message .like-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: #1976d2;
+      transition: opacity 0.3s ease, transform 0.6s ease;
+    }
+    
+    .message .like-btn.loading svg {
+      opacity: 0.6;
+      filter: grayscale(1);
+      animation: spin 0.6s linear infinite;
+    }
+
     #search {
       width: 100%;
       padding: 0.6em;
@@ -231,9 +270,24 @@
       renderMessages(allMessages);
     }
 
-    function renderMessages(data) {
+    async function renderMessages(data) {
       const container = document.getElementById("messages");
       container.innerHTML = "";
+    
+      // get likes for current user so we can mark liked posts
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      let likedPosts = [];
+      if (user && user.username) {
+        try {
+          const likesRes = await fetch(`${API_URL}?type=likes`);
+          const likesData = await likesRes.json();
+          likedPosts = likesData
+            .filter(l => l.username === user.username)
+            .map(l => String(l.fk_post_id));
+        } catch (err) {
+          console.warn("Could not load likes:", err);
+        }
+      }
     
       data.forEach(msg => {
         const div = document.createElement("div");
@@ -247,30 +301,31 @@
           </div>
           <div class="post-message">${msg.message}</div>
           <small>${new Date(msg.timestamp).toLocaleString()}</small>
-          <div>
-            <button class="like-btn" data-postid="${msg.id}">❤️ Like</button>
-          </div>
+          <button class="like-btn" title="Like" data-postid="${msg.id}">
+            ${likedPosts.includes(String(msg.id)) ? likedSVG() : unlikedSVG()}
+          </button>
         `;
     
-        // 👇 Clicking anywhere (except button) opens post
+        // clicking anywhere except button opens the post
         div.addEventListener("click", e => {
-          if (e.target.closest(".like-btn")) return; // ⛔ ignore button clicks
+          if (e.target.closest(".like-btn")) return;
           if (e.target.tagName.toLowerCase() !== "a") {
             window.location.href = `post.html?id=${msg.id}&from=index.html`;
           }
         });
     
-        // 👇 Button click logic
         const likeButton = div.querySelector(".like-btn");
-        likeButton.addEventListener("click", async (e) => {
+        likeButton.addEventListener("click", async e => {
           e.preventDefault();
-          e.stopPropagation(); // stop post navigation
+          e.stopPropagation();
     
           const user = JSON.parse(localStorage.getItem("user") || "null");
           if (!user || !user.username) {
             alert("You need to be logged in to like posts.");
             return;
           }
+    
+          likeButton.classList.add("loading");
     
           try {
             const res = await fetch(API_URL, {
@@ -283,24 +338,41 @@
                 username: user.username
               })
             });
-    
             const result = await res.json();
+    
             if (result.error) {
               alert(result.error);
             } else if (result.message === "Already liked") {
               alert("You’ve already liked this post.");
             } else if (result.success) {
-              alert("Liked!");
-            } else {
-              alert("Unexpected response.");
+              likeButton.innerHTML = likedSVG();
             }
           } catch (err) {
             alert("Failed to like post: " + err.message);
+          } finally {
+            likeButton.classList.remove("loading");
           }
         });
     
         container.appendChild(div);
       });
+    }
+    
+    // --- SVG helpers ---
+    function unlikedSVG() {
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" height="14" width="14">
+          <path fill="#000000" fill-rule="evenodd" d="M13.7499 4.94124c-0.0233 -1.58206 -0.919 -3.14007 -2.2971 -3.78222 -0.7003 -0.326348 -1.51249 -0.407627 -2.35948 -0.13877 -0.70546 0.22393 -1.41202 0.68288 -2.09333 1.40446 -0.68131 -0.72158 -1.38786 -1.18053 -2.09333 -1.40446 -0.84699 -0.268857 -1.65918 -0.187578 -2.35952 0.13877C1.1691 1.80117 0.273441 3.35918 0.250055 4.94124L0.25 4.94123v0.0074c0 2.30748 1.37229 4.35177 2.82563 5.78657 0.73363 0.7242 1.50803 1.3137 2.18354 1.7253 0.33755 0.2056 0.65713 0.371 0.94028 0.4865 0.2705 0.1104 0.55272 0.1943 0.80054 0.1943 0.24782 0 0.53004 -0.0839 0.80054 -0.1943 0.28315 -0.1155 0.60273 -0.2809 0.94028 -0.4865 0.67552 -0.4116 1.44989 -1.0011 2.18359 -1.7253C12.3777 9.3004 13.75 7.25611 13.75 4.94863h0.0001l-0.0002 -0.00739Z" clip-rule="evenodd"></path>
+        </svg>
+      `;
+    }
+    
+    function likedSVG() {
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" height="14" width="14">
+          <path fill="#000000" fill-rule="evenodd" d="M7.48005 3.59438c0.71376 -0.85612 1.39891 -1.29991 1.99468 -1.48479 0.58847 -0.1826 1.12707 -0.12522 1.59267 0.08688 0.9563 0.43558 1.6626 1.56097 1.6826 2.76267 -0.002 1.85536 -1.1487 3.6184 -2.5395 4.96058 -0.68648 0.66258 -1.40702 1.19708 -2.02006 1.56218 -0.30673 0.1827 -0.57827 0.3181 -0.79818 0.4058 -0.23528 0.0938 -0.36027 0.1123 -0.39227 0.1123 -0.03201 0 -0.157 -0.0185 -0.39228 -0.1123 -0.21991 -0.0877 -0.49144 -0.2231 -0.79818 -0.4058 -0.61303 -0.3651 -1.33357 -0.8996 -2.02008 -1.5621C2.39872 8.57767 1.25197 6.81467 1.25 4.95932c0.01995 -1.20171 0.7263 -2.32715 1.6826 -2.76277 0.46565 -0.21212 1.00425 -0.26952 1.59268 -0.08693 0.59576 0.18487 1.28091 0.62864 1.99467 1.48476 0.11875 0.14243 0.29461 0.22478 0.48005 0.22478s0.3613 -0.08235 0.48005 -0.22478Zm6.51985 1.35053c-0.0246 -1.62628 -0.9651 -3.22586 -2.4143 -3.88599C10.8478 0.722887 9.99321 0.639894 9.10426 0.915753 8.39153 1.13693 7.68219 1.58027 7 2.26568c-0.6822 -0.6854 -1.39153 -1.12874 -2.10427 -1.349904 -0.88896 -0.275841 -1.74358 -0.192819 -2.48131 0.143244C0.965176 1.71919 0.0246632 3.3188 0.000071466 4.94508L0 4.95453c0 2.35559 1.43056 4.42596 2.92142 5.86477 0.75489 0.7285 1.55192 1.3217 2.24847 1.7366 0.34805 0.2073 0.6793 0.375 0.97466 0.4928 0.27998 0.1117 0.58274 0.2013 0.85544 0.2013 0.2727 0 0.57546 -0.0896 0.85545 -0.2013 0.29536 -0.1178 0.62661 -0.2855 0.97466 -0.4929 0.69655 -0.4148 1.4936 -1.0081 2.2485 -1.7366C12.5694 9.38035 14 7.30995 14 4.95436l-0.0001 -0.00945Z" clip-rule="evenodd"></path>
+        </svg>
+      `;
     }
 
     function filterMessages() {
