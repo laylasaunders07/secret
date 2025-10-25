@@ -227,12 +227,14 @@
     
       if (!user || !user.username) {
         container.innerHTML = `
-          <div style="text-align:center;">
-            <p>You need to be logged in to post.</p>
-            <p>
-              <a href="login.html">Login</a> or
-              <a href="create.html">Create an Account</a>
-            </p>
+          <div class="post-card" style="text-align:center;">
+            <div style="width:100%;">
+              <p>You need to be logged in to post.</p>
+              <p>
+                <a href="login.html">Login</a> or
+                <a href="create.html">Create an Account</a>
+              </p>
+            </div>
           </div>
         `;
         return;
