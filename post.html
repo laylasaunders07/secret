@@ -52,6 +52,42 @@
     transition: background 0.2s ease;
   }
 
+  .like-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-left: 8px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s ease, transform 0.3s ease;
+  }
+  
+  .like-btn:hover {
+    background: rgba(25,118,210,0.12);
+  }
+  
+  .like-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: #1976d2;
+    transition: opacity 0.3s ease, transform 0.6s ease;
+  }
+  
+  .like-btn.loading svg {
+    opacity: 0.6;
+    filter: grayscale(1);
+    animation: spin 0.6s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
@@ -74,6 +110,24 @@
     const postId = urlParams.get("id");
     let allComments = [];
 
+    const SECRET_KEY = "alva-the-fortnite-god";
+
+    function unlikedHeartSVG() {
+      return `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+        <path fill="none" stroke="#1976d2" stroke-width="2" 
+          d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
+      </svg>`;
+    }
+    
+    function likedHeartSVG() {
+      return `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+        <path fill="#1976d2" 
+          d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
+      </svg>`;
+    }
+
     async function loadPost() {
       if (!postId) {
         document.body.innerHTML = "<p>Post ID not provided.</p>";
@@ -93,16 +147,81 @@
 
       // --- Render main post ---
       const postDiv = document.getElementById("post");
+      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+      let isLiked = false;
+      
+      // ✅ Check if current user has liked this post
+      if (currentUser && currentUser.username) {
+        try {
+          const res = await fetch(`${API_URL}?likesFor=${encodeURIComponent(currentUser.username)}`);
+          const likeData = await res.json();
+          const likedPosts = likeData.likedPosts || [];
+          isLiked = likedPosts.includes(p.id);
+        } catch (err) {
+          console.warn("Could not load liked posts:", err);
+        }
+      }
+      
+      // --- Render main post ---
       postDiv.innerHTML = `
-        <div class="post-main">
-          <div class="post-header">
-            <strong>${p.name || "Unknown User"}</strong>
-            <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
+        <div class="post-main" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div style="flex:1;">
+            <div class="post-header">
+              <strong>${p.name || "Unknown User"}</strong>
+              <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
+            </div>
+            <div class="post-message">${p.message}</div>
+            <small>${new Date(p.timestamp).toLocaleString()}</small>
           </div>
-          <div class="post-message">${p.message}</div>
-          <small>${new Date(p.timestamp).toLocaleString()}</small>
+          <button class="like-btn" title="Like" data-postid="${p.id}">
+            ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
+          </button>
         </div>
       `;
+      
+      // --- Like button click handler ---
+      const likeButton = postDiv.querySelector(".like-btn");
+      likeButton.addEventListener("click", async e => {
+        e.preventDefault();
+        e.stopPropagation();
+      
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (!user || !user.username) {
+          alert("You need to be logged in to like posts.");
+          return;
+        }
+      
+        likeButton.classList.add("loading");
+      
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              key: SECRET_KEY,
+              action: "like",
+              postId: p.id,
+              username: user.username
+            })
+          });
+      
+          const result = await res.json();
+          likeButton.classList.remove("loading");
+      
+          if (result.error) {
+            alert(result.error);
+          } else if (result.success) {
+            if (result.liked) {
+              likeButton.innerHTML = likedHeartSVG();
+            } else {
+              likeButton.innerHTML = unlikedHeartSVG();
+            }
+          }
+        } catch (err) {
+          likeButton.classList.remove("loading");
+          alert("Failed to like post: " + err.message);
+        }
+      });
 
       renderComments(allComments);
     }
