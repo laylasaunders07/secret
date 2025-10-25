@@ -79,6 +79,7 @@
     <a id="likesTab" href="#" class="active">Likes</a>
   </div>
 
+  <!-- Search box for likes -->
   <input 
     type="text" 
     id="searchLikes" 
@@ -93,58 +94,27 @@
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get("id");
-  
+    let allLikes = []; // ✅ properly declared once at top
+
     async function loadPost() {
+      if (!postId) {
+        document.body.innerHTML = "<p>Post ID not provided.</p>";
+        return;
+      }
+
+      // Fetch post data (includes comments)
       const res = await fetch(`${API_URL}?type=post&id=${postId}`);
       const data = await res.json();
-  
       const p = data.post;
       const comments = data.comments || [];
-  
+
+      // Fetch likes
       const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
       const likesData = await likesRes.json();
-      const likeCount = likesData.likes ? likesData.likes.length : 0;
-
+      const likes = likesData.likes || [];
       allLikes = likes;
-      renderLikes(allLikes);
 
-      let allLikes = [];
-      
-      function renderLikes(likes) {
-        const likesDiv = document.getElementById("likes");
-        if (!likes || likes.length === 0) {
-          likesDiv.innerHTML = "<em>No likes yet.</em>";
-          return;
-        }
-      
-        likesDiv.innerHTML = likes.map(l => `
-          <div class="like-card">
-            <div class="post-header">
-              <strong>${l.name || "Unknown User"}</strong>
-              <a href="user.html?id=${l.userId}&from=likes.html" style="margin-left: 0.3em;">@${l.username}</a>
-            </div>
-          </div>
-        `).join("");
-      }
-      
-      function filterLikes() {
-        const term = document.getElementById("searchLikes").value.toLowerCase();
-        const filtered = allLikes.filter(l =>
-          (l.username || "").toLowerCase().includes(term) ||
-          (l.name || "").toLowerCase().includes(term)
-        );
-        renderLikes(filtered);
-      }
-  
-      // Add counts
-      document.getElementById("commentsTab").textContent = `${comments.length} Comments`;
-      document.getElementById("likesTab").textContent = `${likeCount} Likes`;
-  
-      // Set tab links
-      document.getElementById("commentsTab").href = `post.html?id=${postId}`;
-      document.getElementById("likesTab").href = `likes.html?id=${postId}`;
-
-      // Render main post
+      // --- Render Post ---
       const postDiv = document.getElementById("post");
       postDiv.innerHTML = `
         <div class="post-main">
@@ -157,22 +127,23 @@
         </div>
       `;
 
+      // --- Tabs with counts ---
+      document.getElementById("commentsTab").textContent = `${comments.length} Comments`;
+      document.getElementById("likesTab").textContent = `${likes.length} Likes`;
       document.getElementById("commentsTab").href = `post.html?id=${postId}&from=${from}`;
+      document.getElementById("likesTab").href = `likes.html?id=${postId}&from=${from}`;
 
-      loadLikes();
+      // --- Render likes list ---
+      renderLikes(allLikes);
     }
 
-    async function loadLikes() {
-      const res = await fetch(`${API_URL}?likesForPost=${postId}`);
-      const data = await res.json();
-
-      if (!data.likes || data.likes.length === 0) {
-        document.getElementById("likes").innerHTML = "<em>No likes yet.</em>";
+    function renderLikes(likes) {
+      const likesDiv = document.getElementById("likes");
+      if (!likes || likes.length === 0) {
+        likesDiv.innerHTML = "<em>No likes yet.</em>";
         return;
       }
 
-      const likes = data.likes;
-      const likesDiv = document.getElementById("likes");
       likesDiv.innerHTML = likes.map(l => `
         <div class="like-card">
           <div class="post-header">
@@ -182,6 +153,15 @@
           <small>${new Date(l.timestamp).toLocaleString()}</small>
         </div>
       `).join("");
+    }
+
+    function filterLikes() {
+      const term = document.getElementById("searchLikes").value.toLowerCase();
+      const filtered = allLikes.filter(l =>
+        (l.username || "").toLowerCase().includes(term) ||
+        (l.name || "").toLowerCase().includes(term)
+      );
+      renderLikes(filtered);
     }
 
     loadPost();
