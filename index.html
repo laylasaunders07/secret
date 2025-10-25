@@ -346,10 +346,13 @@
     
             if (result.error) {
               alert(result.error);
-            } else if (result.message === "Already liked") {
-              alert("You’ve already liked this post.");
             } else if (result.success) {
-              likeButton.innerHTML = likedHeartSVG();
+              // Toggle based on backend state
+              if (result.liked) {
+                likeButton.innerHTML = likedHeartSVG();
+              } else {
+                likeButton.innerHTML = unlikedHeartSVG();
+              }
             }
           } catch (err) {
             likeButton.classList.remove("loading");
