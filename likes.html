@@ -75,32 +75,33 @@
 
   <!-- Tabs navigation -->
   <div class="tabs">
-    <a href="post.html?id=" id="commentsTab">Comments</a>
-    <a href="#" class="active">Likes</a>
+    <a id="commentsTab" href="#">Comments</a>
+    <a id="likesTab" href="#" class="active">Likes</a>
   </div>
-
-  <div id="likes"></div>
-
+  
   <script>
     const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
     const urlParams = new URLSearchParams(window.location.search);
     const postId = urlParams.get("id");
-
+  
     async function loadPost() {
-      if (!postId) {
-        document.body.innerHTML = "<p>Post ID not provided.</p>";
-        return;
-      }
-
       const res = await fetch(`${API_URL}?type=post&id=${postId}`);
       const data = await res.json();
-
-      if (!data || data.error) {
-        document.body.innerHTML = "<p>Post not found.</p>";
-        return;
-      }
-
+  
       const p = data.post;
+      const comments = data.comments || [];
+  
+      const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
+      const likesData = await likesRes.json();
+      const likeCount = likesData.likes ? likesData.likes.length : 0;
+  
+      // Add counts
+      document.getElementById("commentsTab").textContent = `${comments.length} Comments`;
+      document.getElementById("likesTab").textContent = `${likeCount} Likes`;
+  
+      // Set tab links
+      document.getElementById("commentsTab").href = `post.html?id=${postId}`;
+      document.getElementById("likesTab").href = `likes.html?id=${postId}`;
 
       // Render main post
       const postDiv = document.getElementById("post");
