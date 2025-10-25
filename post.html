@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Post</title>
-  <style>
+<meta charset="UTF-8" />
+<title>Post</title>
+<style>
   body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
   a { color: #007bff; text-decoration: none; }
   a:hover { text-decoration: underline; }
@@ -16,41 +16,24 @@
     border-radius: 10px;
     cursor: default;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
   }
-  .post-main .post-header {
-    font-size: 1.2em; /* larger */
-    margin-bottom: 0.5em;
-  }
-  .post-main .post-header a {
-    font-size: 1em; /* slightly smaller than name */
-    margin-left: 0.5em;
-    font-weight: normal;
-  }
+  .post-main .post-header { font-size: 1.2em; margin-bottom: 0.5em; }
+  .post-main .post-header a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
   .post-main .post-message { font-size: 1.1em; margin-bottom: 0.5em; }
 
   /* Comment styling */
   .comment { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: default; }
-  .comment .post-header {
-    font-size: 1.1em; /* slightly bigger than before */
-    margin-bottom: 0.3em;
-  }
-  .comment .post-header a {
-    font-size: 0.95em;
-    margin-left: 0.3em;
-    font-weight: normal;
-  }
-  .post-message { margin-bottom: 0.3em; }
+  .comment .post-header { font-size: 1.1em; margin-bottom: 0.3em; }
+  .comment .post-header a { font-size: 0.95em; margin-left: 0.3em; font-weight: normal; }
   small { color: gray; font-size: 0.85em; }
   input { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
 
-  /* Hover highlight for all cards */
-  .post:hover,
-  .message:hover,
-  .user:hover,
-  .comment:hover {
-    background: #e3f2fd !important;
-    transition: background 0.2s ease;
-  }
+  /* Hover highlight */
+  .post:hover, .message:hover, .user:hover, .comment:hover { background: #e3f2fd !important; transition: background 0.2s ease; }
 
   .like-btn {
     flex-shrink: 0;
@@ -66,115 +49,95 @@
     cursor: pointer;
     transition: background 0.12s ease, transform 0.3s ease;
   }
-  
-  .like-btn:hover {
-    background: rgba(25,118,210,0.12);
-  }
-  
-  .like-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: #1976d2;
-    transition: opacity 0.3s ease, transform 0.6s ease;
-  }
-  
-  .like-btn.loading svg {
-    opacity: 0.6;
-    filter: grayscale(1);
-    animation: spin 0.6s linear infinite;
-  }
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
+  .like-btn:hover { background: rgba(25,118,210,0.12); }
+  .like-btn svg { width: 20px; height: 20px; fill: #1976d2; transition: opacity 0.3s ease, transform 0.6s ease; }
+  .like-btn.loading svg { opacity: 0.6; filter: grayscale(1); animation: spin 0.6s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-  /* Tabs navigation */
-  .tabs {
-    display: flex;
-    align-items: center;
-    gap: 2em;
-    margin: 1.2em 0 1em 0;
-    font-size: 1.25em;
-  }
-  
-  .tabs a {
-    color: black;
-    text-decoration: none;
-    font-weight: normal;
-    transition: font-weight 0.15s ease, color 0.15s ease;
-  }
-  
-  .tabs a:hover {
-    font-weight: bold;
-    color: black;
-  }
-  
-  .tabs a.active {
-    font-weight: bold;
-    color: black;
-    cursor: default;
-  }
+  /* Tabs */
+  .tabs { display: flex; align-items: center; gap: 2em; margin: 1.2em 0 1em 0; font-size: 1.25em; }
+  .tabs a { color: black; text-decoration: none; font-weight: normal; transition: font-weight 0.15s ease, color 0.15s ease; }
+  .tabs a:hover { font-weight: bold; color: black; }
+  .tabs a.active { font-weight: bold; color: black; cursor: default; }
 </style>
 </head>
 <body>
-  <a id="backLink" href="#">← Back</a>
-  <script>
-    const URLparams = new URLSearchParams(window.location.search);
-    const from = URLparams.get("from") || "index.html";
-    document.getElementById("backLink").href = from;
-  </script>
+<a id="backLink" href="#">← Back</a>
+<script>
+  const URLparams = new URLSearchParams(window.location.search);
+  const from = URLparams.get("from") || "index.html";
+  document.getElementById("backLink").href = from;
+</script>
 
-  <div id="post"></div>
+<div id="post"></div>
 
-  <div class="tabs">
-    <a id="commentsTab" href="#" class="active">Comments</a>
-    <a id="likesTab" href="#">Likes</a>
-  </div>
-  
-  <input type="text" id="searchComments" placeholder="Search comments..." oninput="filterComments()">
-  <div id="comments"></div>
+<div class="tabs">
+  <a id="commentsTab" href="#" class="active">Comments</a>
+  <a id="likesTab" href="#">Likes</a>
+</div>
+
+<input type="text" id="searchComments" placeholder="Search comments..." oninput="filterComments()">
+<div id="comments"></div>
 
 <script>
-  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-  const urlParams = new URLSearchParams(window.location.search);
-  const postId = urlParams.get("id");
-  let allComments = [];
+const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+const urlParams = new URLSearchParams(window.location.search);
+const postId = urlParams.get("id");
+let allComments = [];
 
-  async function loadPost() {
-    if (!postId) {
-      document.body.innerHTML = "<p>Post ID not provided.</p>";
-      return;
-    }
+function unlikedHeartSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+    <path fill="none" stroke="#1976d2" stroke-width="2" d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
+  </svg>`;
+}
 
-    const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-    const data = await res.json();
+function likedHeartSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+    <path fill="#1976d2" d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
+  </svg>`;
+}
 
-    if (!data || data.error) {
-      document.body.innerHTML = "<p>Post not found.</p>";
-      return;
-    }
+async function loadPost() {
+  if (!postId) { document.body.innerHTML = "<p>Post ID not provided.</p>"; return; }
 
-    const p = data.post;
-    allComments = data.comments || [];
+  const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+  const data = await res.json();
 
-    // Update tab URLs
-    document.getElementById("commentsTab").href = `post.html?id=${postId}`;
-    document.getElementById("likesTab").href = `likes.html?id=${postId}`;
+  if (!data || data.error) { document.body.innerHTML = "<p>Post not found.</p>"; return; }
 
-    // Add counts into tab labels
-    const commentCount = allComments.length;
-    const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
-    const likesData = await likesRes.json();
-    const likeCount = likesData.likes ? likesData.likes.length : 0;
+  const p = data.post;
+  allComments = data.comments || [];
 
-    document.getElementById("commentsTab").textContent = `${commentCount} Comments`;
-    document.getElementById("likesTab").textContent = `${likeCount} Likes`;
+  // Update tab URLs
+  document.getElementById("commentsTab").href = `post.html?id=${postId}`;
+  document.getElementById("likesTab").href = `likes.html?id=${postId}`;
 
-    // Render main post
-    const postDiv = document.getElementById("post");
-    postDiv.innerHTML = `
-      <div class="post-main">
+  // Add counts into tab labels
+  const commentCount = allComments.length;
+  const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
+  const likesData = await likesRes.json();
+  const likeCount = likesData.likes ? likesData.likes.length : 0;
+
+  document.getElementById("commentsTab").textContent = `${commentCount} Comments`;
+  document.getElementById("likesTab").textContent = `${likeCount} Likes`;
+
+  // Check if current user liked the post
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  let isLiked = false;
+  if (currentUser && currentUser.username) {
+    try {
+      const userLikesRes = await fetch(`${API_URL}?likesFor=${encodeURIComponent(currentUser.username)}`);
+      const userLikesData = await userLikesRes.json();
+      const likedPosts = userLikesData.likedPosts || [];
+      isLiked = likedPosts.includes(p.id);
+    } catch (err) { console.warn("Could not load liked posts:", err); }
+  }
+
+  // Render main post with like button
+  const postDiv = document.getElementById("post");
+  postDiv.innerHTML = `
+    <div class="post-main">
+      <div style="flex:1">
         <div class="post-header">
           <strong>${p.name || "Unknown User"}</strong>
           <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
@@ -182,31 +145,66 @@
         <div class="post-message">${p.message}</div>
         <small>${new Date(p.timestamp).toLocaleString()}</small>
       </div>
-    `;
+      <button class="like-btn" title="Like" data-postid="${p.id}">
+        ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
+      </button>
+    </div>
+  `;
 
-    renderComments(allComments);
-  }
+  const likeButton = postDiv.querySelector(".like-btn");
+  const SECRET_KEY = "alva-the-fortnite-god";
 
-  function renderComments(comments) {
-    const commentsDiv = document.getElementById("comments");
-    if (!comments || comments.length === 0) {
-      commentsDiv.innerHTML = "<em>No comments yet.</em>";
-      return;
+  likeButton.addEventListener("click", async e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!currentUser || !currentUser.username) { alert("You need to be logged in to like posts."); return; }
+    likeButton.classList.add("loading");
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: SECRET_KEY, action: "like", postId: p.id, username: currentUser.username })
+      });
+      const result = await res.json();
+      likeButton.classList.remove("loading");
+      if (result.success) {
+        likeButton.innerHTML = result.liked ? likedHeartSVG() : unlikedHeartSVG();
+      } else alert(result.error || "Failed to like post");
+    } catch (err) {
+      likeButton.classList.remove("loading");
+      alert("Failed to like post: " + err.message);
     }
+  });
 
-    commentsDiv.innerHTML = comments.map(cm => `
-      <div class="comment">
-        <div class="post-header">
-          <strong>${cm.name || "Unknown User"}</strong>
-          <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
-        </div>
-        <div class="post-message">${cm.comment}</div>
-        <small>${new Date(cm.timestamp).toLocaleString()}</small>
+  renderComments(allComments);
+}
+
+function renderComments(comments) {
+  const commentsDiv = document.getElementById("comments");
+  if (!comments || comments.length === 0) { commentsDiv.innerHTML = "<em>No comments yet.</em>"; return; }
+
+  commentsDiv.innerHTML = comments.map(cm => `
+    <div class="comment">
+      <div class="post-header">
+        <strong>${cm.name || "Unknown User"}</strong>
+        <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
       </div>
-    `).join("");
-  }
+      <div class="post-message">${cm.comment}</div>
+      <small>${new Date(cm.timestamp).toLocaleString()}</small>
+    </div>
+  `).join("");
+}
 
-  loadPost();
+function filterComments() {
+  const term = document.getElementById("searchComments").value.toLowerCase();
+  const filtered = allComments.filter(cm =>
+    (cm.username || "").toLowerCase().includes(term) ||
+    (cm.name || "").toLowerCase().includes(term) ||
+    (cm.comment || "").toLowerCase().includes(term)
+  );
+  renderComments(filtered);
+}
+
+loadPost();
 </script>
 </body>
 </html>
