@@ -128,165 +128,90 @@
   <div id="post"></div>
 
   <div class="tabs">
-    <a href="index.html" class="active">Comments</a>
-    <a href="users.html">Likes</a>
+    <a id="commentsTab" href="#" class="active">Comments</a>
+    <a id="likesTab" href="#">Likes</a>
   </div>
   
   <input type="text" id="searchComments" placeholder="Search comments..." oninput="filterComments()">
   <div id="comments"></div>
 
-  <script>
-    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-    const urlParams = new URLSearchParams(window.location.search);
-    const postId = urlParams.get("id");
-    let allComments = [];
+  <div class="tabs">
+  <a id="commentsTab" href="#" class="active">Comments</a>
+  <a id="likesTab" href="#">Likes</a>
+</div>
 
-    const SECRET_KEY = "alva-the-fortnite-god";
+<script>
+  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get("id");
+  let allComments = [];
 
-    function unlikedHeartSVG() {
-      return `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-        <path fill="none" stroke="#1976d2" stroke-width="2" 
-          d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
-      </svg>`;
-    }
-    
-    function likedHeartSVG() {
-      return `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-        <path fill="#1976d2" 
-          d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
-      </svg>`;
+  async function loadPost() {
+    if (!postId) {
+      document.body.innerHTML = "<p>Post ID not provided.</p>";
+      return;
     }
 
-    async function loadPost() {
-      if (!postId) {
-        document.body.innerHTML = "<p>Post ID not provided.</p>";
-        return;
-      }
+    const res = await fetch(`${API_URL}?type=post&id=${postId}`);
+    const data = await res.json();
 
-      const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-      const data = await res.json();
+    if (!data || data.error) {
+      document.body.innerHTML = "<p>Post not found.</p>";
+      return;
+    }
 
-      if (!data || data.error) {
-        document.body.innerHTML = "<p>Post not found.</p>";
-        return;
-      }
+    const p = data.post;
+    allComments = data.comments || [];
 
-      const p = data.post;
-      allComments = data.comments || [];
+    // Update tab URLs
+    document.getElementById("commentsTab").href = `post.html?id=${postId}`;
+    document.getElementById("likesTab").href = `likes.html?id=${postId}`;
 
-      // --- Render main post ---
-      const postDiv = document.getElementById("post");
-      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
-      let isLiked = false;
-      
-      // ✅ Check if current user has liked this post
-      if (currentUser && currentUser.username) {
-        try {
-          const res = await fetch(`${API_URL}?likesFor=${encodeURIComponent(currentUser.username)}`);
-          const likeData = await res.json();
-          const likedPosts = likeData.likedPosts || [];
-          isLiked = likedPosts.includes(p.id);
-        } catch (err) {
-          console.warn("Could not load liked posts:", err);
-        }
-      }
-      
-      // --- Render main post ---
-      postDiv.innerHTML = `
-        <div class="post-main" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-          <div style="flex:1;">
-            <div class="post-header">
-              <strong>${p.name || "Unknown User"}</strong>
-              <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
-            </div>
-            <div class="post-message">${p.message}</div>
-            <small>${new Date(p.timestamp).toLocaleString()}</small>
-          </div>
-          <button class="like-btn" title="Like" data-postid="${p.id}">
-            ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
-          </button>
+    // Add counts into tab labels
+    const commentCount = allComments.length;
+    const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
+    const likesData = await likesRes.json();
+    const likeCount = likesData.likes ? likesData.likes.length : 0;
+
+    document.getElementById("commentsTab").textContent = `${commentCount} Comments`;
+    document.getElementById("likesTab").textContent = `${likeCount} Likes`;
+
+    // Render main post
+    const postDiv = document.getElementById("post");
+    postDiv.innerHTML = `
+      <div class="post-main">
+        <div class="post-header">
+          <strong>${p.name || "Unknown User"}</strong>
+          <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
         </div>
-      `;
-      
-      // --- Like button click handler ---
-      const likeButton = postDiv.querySelector(".like-btn");
-      likeButton.addEventListener("click", async e => {
-        e.preventDefault();
-        e.stopPropagation();
-      
-        const user = JSON.parse(localStorage.getItem("user") || "null");
-        if (!user || !user.username) {
-          alert("You need to be logged in to like posts.");
-          return;
-        }
-      
-        likeButton.classList.add("loading");
-      
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              key: SECRET_KEY,
-              action: "like",
-              postId: p.id,
-              username: user.username
-            })
-          });
-      
-          const result = await res.json();
-          likeButton.classList.remove("loading");
-      
-          if (result.error) {
-            alert(result.error);
-          } else if (result.success) {
-            if (result.liked) {
-              likeButton.innerHTML = likedHeartSVG();
-            } else {
-              likeButton.innerHTML = unlikedHeartSVG();
-            }
-          }
-        } catch (err) {
-          likeButton.classList.remove("loading");
-          alert("Failed to like post: " + err.message);
-        }
-      });
+        <div class="post-message">${p.message}</div>
+        <small>${new Date(p.timestamp).toLocaleString()}</small>
+      </div>
+    `;
 
-      renderComments(allComments);
+    renderComments(allComments);
+  }
+
+  function renderComments(comments) {
+    const commentsDiv = document.getElementById("comments");
+    if (!comments || comments.length === 0) {
+      commentsDiv.innerHTML = "<em>No comments yet.</em>";
+      return;
     }
 
-    function renderComments(comments) {
-      const commentsDiv = document.getElementById("comments");
-      if (!comments || comments.length === 0) {
-        commentsDiv.innerHTML = "<em>No comments yet.</em>";
-        return;
-      }
-
-      commentsDiv.innerHTML = comments.map(cm => `
-        <div class="comment">
-          <div class="post-header">
-            <strong>${cm.name || "Unknown User"}</strong>
-            <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
-          </div>
-          <div class="post-message">${cm.comment}</div>
-          <small>${new Date(cm.timestamp).toLocaleString()}</small>
+    commentsDiv.innerHTML = comments.map(cm => `
+      <div class="comment">
+        <div class="post-header">
+          <strong>${cm.name || "Unknown User"}</strong>
+          <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
         </div>
-      `).join("");
-    }
+        <div class="post-message">${cm.comment}</div>
+        <small>${new Date(cm.timestamp).toLocaleString()}</small>
+      </div>
+    `).join("");
+  }
 
-    function filterComments() {
-      const term = document.getElementById("searchComments").value.toLowerCase();
-      const filtered = allComments.filter(cm =>
-        (cm.username || "").toLowerCase().includes(term) ||
-        (cm.name || "").toLowerCase().includes(term) ||
-        (cm.comment || "").toLowerCase().includes(term)
-      );
-      renderComments(filtered);
-    }
-
-    loadPost();
-  </script>
+  loadPost();
+</script>
 </body>
 </html>
