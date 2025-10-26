@@ -271,8 +271,8 @@
 
     if (!userData || !userData.username) {
       container.innerHTML = `
-        <div class="user-card" style="text-align:center;">
-          <p>No user is currently logged in.</p><br>
+        <div class="user-card" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+          <p>No user is currently logged in.</p>
           <p><a href="login.html">Login</a> or <a href="create.html">Create an Account</a></p>
         </div>`;
       return;
