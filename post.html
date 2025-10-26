@@ -1,210 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Post</title>
-<style>
-  body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
-  a { color: #007bff; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
+    a { color: #007bff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-  /* Main post styling */
-  .post-main {
-    background: #e3f2fd;
-    padding: 1em;
-    margin: 1em 0;
-    border-radius: 10px;
-    cursor: default;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-  .post-main .post-header { font-size: 1.2em; margin-bottom: 0.5em; }
-  .post-main .post-header a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
-  .post-main .post-message { font-size: 1.1em; margin-bottom: 0.5em; }
+    /* Back link */
+    #backLink { display: inline-block; margin-bottom: 1em; }
 
-  /* Comment styling */
-  .comment { background: #f5f5f5; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; cursor: default; }
-  .comment .post-header { font-size: 1.1em; margin-bottom: 0.3em; }
-  .comment .post-header a { font-size: 0.95em; margin-left: 0.3em; font-weight: normal; }
-  small { color: gray; font-size: 0.85em; }
-  input { width: 100%; padding: 0.6em; margin: 0.5em 0; border-radius: 6px; border: 1px solid #ccc; }
+    /* Profile card */
+    .profile-card {
+      background: #e3f2fd;
+      padding: 1em;
+      border-radius: 8px;
+      margin-bottom: 1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-  /* Hover highlight */
-  .post:hover, .message:hover, .user:hover, .comment:hover { background: #e3f2fd !important; transition: background 0.2s ease; }
+    #username { font-size: 1.4em; margin-bottom: 0.2em; }
+    #username a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
+    #bio { font-size: 1.05em; margin-bottom: 0.5em; }
+    #dateCreated { font-size: 0.9em; margin-bottom: 0.5em; color: #555; }
 
-  .like-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    margin-left: 8px;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.12s ease, transform 0.3s ease;
-  }
-  .like-btn:hover { background: rgba(25,118,210,0.12); }
-  .like-btn svg { width: 20px; height: 20px; fill: #1976d2; transition: opacity 0.3s ease, transform 0.6s ease; }
-  .like-btn.loading svg { opacity: 0.6; filter: grayscale(1); animation: spin 0.6s linear infinite; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    /* Posts */
+    .post {
+      background: #f5f5f5;
+      padding: 0.8em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .post:hover { background: #e3f2fd !important; }
 
-  /* Tabs */
-  .tabs { display: flex; align-items: center; gap: 2em; margin: 1.2em 0 1em 0; font-size: 1.25em; }
-  .tabs a { color: black; text-decoration: none; font-weight: normal; transition: font-weight 0.15s ease, color 0.15s ease; }
-  .tabs a:hover { font-weight: bold; color: black; }
-  .tabs a.active { font-weight: bold; color: black; cursor: default; }
-</style>
+    .post-header { font-weight: bold; font-size: 1.1em; }
+    .post-header a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
+    .post-message { margin: 0.5em 0; }
+    small { color: gray; font-size: 0.85em; }
+
+    /* Follow button — same style as like button */
+    .follow-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.3s ease;
+    }
+    .follow-btn:hover { background: rgba(25,118,210,0.12); }
+    .follow-btn svg { width: 20px; height: 20px; fill: #1976d2; }
+
+    /* Tabs (like post.html) */
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 2em;
+      margin: 1.2em 0 1em 0;
+      font-size: 1.25em;
+    }
+    .tabs a {
+      color: black;
+      text-decoration: none;
+      font-weight: normal;
+      transition: font-weight 0.15s ease, color 0.15s ease;
+    }
+    .tabs a:hover { font-weight: bold; color: black; }
+    .tabs a.active { font-weight: bold; color: black; cursor: default; }
+
+    #search { width: 100%; padding: 0.6em; margin: 0.5em 0 1em 0; border-radius: 6px; border: 1px solid #ccc; }
+  </style>
 </head>
 <body>
-<a id="backLink" href="#">← Back</a>
-<script>
-  const URLparams = new URLSearchParams(window.location.search);
-  const from = URLparams.get("from") || "index.html";
-  document.getElementById("backLink").href = from;
-</script>
+  <a id="backLink" href="#">← Back</a>
+  <script>
+    const URLparams = new URLSearchParams(window.location.search);
+    const from = URLparams.get("from") || "index.html";
+    document.getElementById("backLink").href = from;
+  </script>
 
-<div id="post"></div>
-
-<div class="tabs">
-  <a id="commentsTab" href="#" class="active">Comments</a>
-  <a id="likesTab" href="#">Likes</a>
-</div>
-
-<input type="text" id="searchComments" placeholder="Search comments..." oninput="filterComments()">
-<div id="comments"></div>
-
-<script>
-const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-const urlParams = new URLSearchParams(window.location.search);
-const postId = urlParams.get("id");
-let allComments = [];
-
-function unlikedHeartSVG() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-    <path fill="none" stroke="#1976d2" stroke-width="2" d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
-  </svg>`;
-}
-
-function likedHeartSVG() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-    <path fill="#1976d2" d="M12 21s-7.5-4.65-10-9.5C.4 6.44 2.6 3 6.2 3c1.9 0 3.5 1.1 4.3 2.7C11.3 4.1 12.9 3 14.8 3c3.6 0 5.8 3.44 4.2 8.5C19.5 16.35 12 21 12 21z"/>
-  </svg>`;
-}
-
-async function loadPost() {
-  if (!postId) { document.body.innerHTML = "<p>Post ID not provided.</p>"; return; }
-
-  const res = await fetch(`${API_URL}?type=post&id=${postId}`);
-  const data = await res.json();
-
-  if (!data || data.error) { document.body.innerHTML = "<p>Post not found.</p>"; return; }
-
-  const p = data.post;
-  allComments = data.comments || [];
-
-  // Update tab URLs
-  document.getElementById("commentsTab").href = `post.html?id=${postId}`;
-  document.getElementById("likesTab").href = `likes.html?id=${postId}`;
-
-  // Add counts into tab labels
-  const commentCount = allComments.length;
-  const likesRes = await fetch(`${API_URL}?likesForPost=${postId}`);
-  const likesData = await likesRes.json();
-  const likeCount = likesData.likes ? likesData.likes.length : 0;
-
-  document.getElementById("commentsTab").textContent = `${commentCount} Comments`;
-  document.getElementById("likesTab").textContent = `${likeCount} Likes`;
-
-  // Check if current user liked the post
-  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
-  let isLiked = false;
-  if (currentUser && currentUser.username) {
-    try {
-      const userLikesRes = await fetch(`${API_URL}?likesFor=${encodeURIComponent(currentUser.username)}`);
-      const userLikesData = await userLikesRes.json();
-      const likedPosts = userLikesData.likedPosts || [];
-      isLiked = likedPosts.includes(p.id);
-    } catch (err) { console.warn("Could not load liked posts:", err); }
-  }
-
-  // Render main post with like button
-  const postDiv = document.getElementById("post");
-  postDiv.innerHTML = `
-    <div class="post-main">
-      <div style="flex:1">
-        <div class="post-header">
-          <strong>${p.name || "Unknown User"}</strong>
-          <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
-        </div>
-        <div class="post-message">${p.message}</div>
-        <small>${new Date(p.timestamp).toLocaleString()}</small>
-      </div>
-      <button class="like-btn" title="Like" data-postid="${p.id}">
-        ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
-      </button>
+  <div class="profile-card">
+    <div>
+      <h1 id="username"></h1>
+      <p id="bio"></p>
+      <p id="dateCreated"><em>Date joined: [placeholder]</em></p>
     </div>
-  `;
+    <button id="followBtn" class="follow-btn" title="Follow" style="display:none;"></button>
+  </div>
 
-  const likeButton = postDiv.querySelector(".like-btn");
-  const SECRET_KEY = "alva-the-fortnite-god";
+  <!-- Tabs -->
+  <div class="tabs">
+    <a href="#" id="postsTab" class="active">Posts</a>
+    <a href="#" id="followingTab">Following</a>
+    <a href="#" id="followersTab">Followers</a>
+  </div>
 
-  likeButton.addEventListener("click", async e => {
-    e.preventDefault(); e.stopPropagation();
-    if (!currentUser || !currentUser.username) { alert("You need to be logged in to like posts."); return; }
-    likeButton.classList.add("loading");
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: SECRET_KEY, action: "like", postId: p.id, username: currentUser.username })
-      });
-      const result = await res.json();
-      likeButton.classList.remove("loading");
-      if (result.success) {
-        likeButton.innerHTML = result.liked ? likedHeartSVG() : unlikedHeartSVG();
-      } else alert(result.error || "Failed to like post");
-    } catch (err) {
-      likeButton.classList.remove("loading");
-      alert("Failed to like post: " + err.message);
+  <input type="text" id="search" placeholder="Search posts..." oninput="filterPosts()">
+  <div id="posts"></div>
+
+  <script>
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const SECRET_KEY = "alva-the-fortnite-god";
+    let allPosts = [];
+
+    // Follow icons (same color as like)
+    const followIcon = () => `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path fill="#1976d2" d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+      </svg>`;
+    const unfollowIcon = () => `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path fill="none" stroke="#1976d2" stroke-width="2" d="M15 12H9m3 10c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0-10c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5z"/>
+      </svg>`;
+
+    async function loadProfile() {
+      if (!id) {
+        document.body.innerHTML = "<p>User ID not provided.</p>";
+        return;
+      }
+
+      // Tabs link setup
+      document.getElementById("postsTab").href = `user.html?id=${id}`;
+      document.getElementById("followingTab").href = `following.html?id=${id}`;
+      document.getElementById("followersTab").href = `followers.html?id=${id}`;
+
+      const res = await fetch(`${API_URL}?type=user&id=${id}`);
+      const data = await res.json();
+      if (data.error) {
+        document.body.innerHTML = `<p>${data.error}</p>`;
+        return;
+      }
+
+      const user = data.user;
+      document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
+      document.getElementById("bio").textContent = user.bio || "No bio provided.";
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`;
+
+      // Handle follow button
+      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+      const followBtn = document.getElementById("followBtn");
+      if (currentUser && currentUser.id !== user.id) {
+        followBtn.style.display = "inline-flex";
+        try {
+          const res = await fetch(`${API_URL}?following=${encodeURIComponent(currentUser.username)}`);
+          const data = await res.json();
+          const isFollowing = (data.following || []).includes(user.username);
+          followBtn.innerHTML = isFollowing ? unfollowIcon() : followIcon();
+
+          followBtn.onclick = async () => {
+            followBtn.disabled = true;
+            try {
+              const res = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  key: SECRET_KEY,
+                  action: "follow",
+                  follower: currentUser.username,
+                  following: user.username
+                })
+              });
+              const result = await res.json();
+              if (result.success) {
+                followBtn.innerHTML = result.following ? unfollowIcon() : followIcon();
+              }
+            } catch (err) {
+              console.error("Follow failed:", err);
+            }
+            followBtn.disabled = false;
+          };
+        } catch (err) {
+          console.warn("Failed to check following state:", err);
+        }
+      }
+
+      allPosts = data.posts || [];
+      renderPosts(allPosts);
     }
-  });
 
-  renderComments(allComments);
-}
+    function renderPosts(posts) {
+      const container = document.getElementById("posts");
+      if (!posts.length) {
+        container.innerHTML = "<p>No posts yet.</p>";
+        return;
+      }
+      container.innerHTML = posts.map(p => `
+        <div class="post" onclick="window.location.href='post.html?id=${p.id}&from=user.html?id=${id}'">
+          <div class="post-header">${p.name || "Unknown User"} 
+            <a href="user.html?id=${p.userId}&from=user.html">@${p.username}</a>
+          </div>
+          <div class="post-message">${p.message}</div>
+          <small>${new Date(p.timestamp).toLocaleString()}</small>
+        </div>
+      `).join("");
+    }
 
-function renderComments(comments) {
-  const commentsDiv = document.getElementById("comments");
-  if (!comments || comments.length === 0) { commentsDiv.innerHTML = "<em>No comments yet.</em>"; return; }
+    function filterPosts() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const filtered = allPosts.filter(p =>
+        (p.message || "").toLowerCase().includes(term) ||
+        (p.username || "").toLowerCase().includes(term) ||
+        (p.name || "").toLowerCase().includes(term)
+      );
+      renderPosts(filtered);
+    }
 
-  commentsDiv.innerHTML = comments.map(cm => `
-    <div class="comment">
-      <div class="post-header">
-        <strong>${cm.name || "Unknown User"}</strong>
-        <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
-      </div>
-      <div class="post-message">${cm.comment}</div>
-      <small>${new Date(cm.timestamp).toLocaleString()}</small>
-    </div>
-  `).join("");
-}
-
-function filterComments() {
-  const term = document.getElementById("searchComments").value.toLowerCase();
-  const filtered = allComments.filter(cm =>
-    (cm.username || "").toLowerCase().includes(term) ||
-    (cm.name || "").toLowerCase().includes(term) ||
-    (cm.comment || "").toLowerCase().includes(term)
-  );
-  renderComments(filtered);
-}
-
-loadPost();
-</script>
+    loadProfile();
+  </script>
 </body>
 </html>
