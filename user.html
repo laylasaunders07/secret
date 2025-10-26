@@ -148,6 +148,11 @@
     
       const res = await fetch(`${API_URL}?type=user&id=${id}`);
       const data = await res.json();
+      if (data.counts) {
+        document.getElementById("postsTab").innerHTML = `${data.counts.posts} Posts`;
+        document.getElementById("followingTab").innerHTML = `${data.counts.following} Following`;
+        document.getElementById("followersTab").innerHTML = `${data.counts.followers} Followers`;
+      }
       if (data.error) {
         document.body.innerHTML = `<p>${data.error}</p>`;
         return;
