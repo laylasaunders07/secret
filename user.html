@@ -188,8 +188,8 @@
               body: JSON.stringify({
                 key: SECRET_KEY,
                 action: "follow",
-                follower: currentUser.username,
-                following: viewedUser.username
+                followerId: currentUser.pk_user_id,
+                followedId: viewedUser.id
               })
             });
             const result = await res.json();
