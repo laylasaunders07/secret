@@ -112,82 +112,106 @@
     const id = params.get("id");
     const SECRET_KEY = "alva-the-fortnite-god";
     let allPosts = [];
-
-    // Follow icons (same color as like)
+    
+    // Follow icons (like button style)
     const followIcon = () => `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="#1976d2" d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+        <path fill="none" stroke="#1976d2" stroke-width="2"
+          d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
       </svg>`;
     const unfollowIcon = () => `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="none" stroke="#1976d2" stroke-width="2" d="M15 12H9m3 10c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0-10c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5z"/>
+        <path fill="#1976d2" 
+          d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
       </svg>`;
-
+    
     async function loadProfile() {
       if (!id) {
         document.body.innerHTML = "<p>User ID not provided.</p>";
         return;
       }
-
-      // Tabs link setup
+    
+      // Tabs setup
       document.getElementById("postsTab").href = `user.html?id=${id}`;
       document.getElementById("followingTab").href = `following.html?id=${id}`;
       document.getElementById("followersTab").href = `followers.html?id=${id}`;
-
+    
       const res = await fetch(`${API_URL}?type=user&id=${id}`);
       const data = await res.json();
       if (data.error) {
         document.body.innerHTML = `<p>${data.error}</p>`;
         return;
       }
-
+    
       const user = data.user;
       document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
       document.getElementById("bio").textContent = user.bio || "No bio provided.";
       document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`;
-
-      // Handle follow button
-      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    
       const followBtn = document.getElementById("followBtn");
-      if (currentUser && currentUser.id !== user.id) {
+      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    
+      // 🟦 Hide follow button if viewing own profile or not logged in
+      if (!currentUser || !currentUser.username || currentUser.id == user.id || currentUser.username == user.username) {
+        followBtn.style.display = "none";
+      } else {
         followBtn.style.display = "inline-flex";
-        try {
-          const res = await fetch(`${API_URL}?following=${encodeURIComponent(currentUser.username)}`);
-          const data = await res.json();
-          const isFollowing = (data.following || []).includes(user.username);
-          followBtn.innerHTML = isFollowing ? unfollowIcon() : followIcon();
-
-          followBtn.onclick = async () => {
-            followBtn.disabled = true;
-            try {
-              const res = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  key: SECRET_KEY,
-                  action: "follow",
-                  follower: currentUser.username,
-                  following: user.username
-                })
-              });
-              const result = await res.json();
-              if (result.success) {
-                followBtn.innerHTML = result.following ? unfollowIcon() : followIcon();
-              }
-            } catch (err) {
-              console.error("Follow failed:", err);
-            }
-            followBtn.disabled = false;
-          };
-        } catch (err) {
-          console.warn("Failed to check following state:", err);
-        }
+        setupFollowButton(currentUser, user, followBtn);
       }
-
+    
       allPosts = data.posts || [];
       renderPosts(allPosts);
     }
-
+    
+    async function setupFollowButton(currentUser, viewedUser, button) {
+      try {
+        // Check current following list
+        const res = await fetch(`${API_URL}?following=${encodeURIComponent(currentUser.username)}`);
+        const data = await res.json();
+        const isFollowing = (data.following || []).includes(viewedUser.username);
+        button.innerHTML = isFollowing ? unfollowIcon() : followIcon();
+    
+        // Add click handler
+        button.onclick = async () => {
+          if (!currentUser || !currentUser.username) {
+            alert("You must be logged in to follow users.");
+            return;
+          }
+    
+          button.disabled = true;
+          button.classList.add("loading"); // optional visual hint (can add CSS spin later)
+    
+          try {
+            const res = await fetch(API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                key: SECRET_KEY,
+                action: "follow",
+                follower: currentUser.username,
+                following: viewedUser.username
+              })
+            });
+            const result = await res.json();
+    
+            if (result.success) {
+              button.innerHTML = result.following ? unfollowIcon() : followIcon();
+            } else {
+              alert(result.error || "Follow action failed.");
+            }
+          } catch (err) {
+            console.error("Follow error:", err);
+            alert("Could not follow user: " + err.message);
+          }
+    
+          button.disabled = false;
+          button.classList.remove("loading");
+        };
+      } catch (err) {
+        console.warn("Failed to get following state:", err);
+      }
+    }
+    
     function renderPosts(posts) {
       const container = document.getElementById("posts");
       if (!posts.length) {
@@ -204,7 +228,7 @@
         </div>
       `).join("");
     }
-
+    
     function filterPosts() {
       const term = document.getElementById("search").value.toLowerCase();
       const filtered = allPosts.filter(p =>
@@ -214,8 +238,8 @@
       );
       renderPosts(filtered);
     }
-
+    
     loadProfile();
-  </script>
+    </script>
 </body>
 </html>
