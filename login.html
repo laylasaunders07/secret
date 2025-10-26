@@ -59,7 +59,7 @@
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || "Login failed");
-        localStorage.setItem("user", JSON.stringify({ username: data.username, id: data.id }));
+        localStorage.setItem("user", JSON.stringify(data.user));
         showWelcome(data.user);
       } catch (e) {
         err.textContent = e.message;
