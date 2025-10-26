@@ -59,6 +59,14 @@
     .follow-btn:hover { background: rgba(25,118,210,0.12); }
     .follow-btn svg { width: 20px; height: 20px; fill: #1976d2; }
 
+    .follow-btn.loading svg {
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     /* Tabs (like post.html) */
     .tabs {
       display: flex;
@@ -113,16 +121,18 @@
     const SECRET_KEY = "alva-the-fortnite-god";
     let allPosts = [];
     
-    // Follow icons (like button style)
+    // Follow (outline)
     const followIcon = () => `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="none" stroke="#1976d2" stroke-width="2"
-          d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="#000000" class="bi bi-person-check" viewBox="0 0 16 16" height="20" width="20">
+        <path d="M12.5 16a3.5 3.5 0 1 0 0 -7 3.5 3.5 0 0 0 0 7m1.679 -4.493 -1.335 2.226a0.75 0.75 0 0 1 -1.174 0.144l-0.774 -0.773a0.5 0.5 0 0 1 0.708 -0.708l0.547 0.548 1.17 -1.951a0.5 0.5 0 1 1 0.858 0.514M11 5a3 3 0 1 1 -6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0 -4 2 2 0 0 0 0 4" stroke-width="1"></path>
+        <path d="M8.256 14a4.5 4.5 0 0 1 -0.229 -1.004H3c0.001 -0.246 0.154 -0.986 0.832 -1.664C4.484 10.68 5.711 10 8 10q0.39 0 0.74 0.025c0.226 -0.341 0.496 -0.65 0.804 -0.918Q8.844 9.002 8 9c-5 0 -6 3 -6 4s1 1 1 1z" stroke-width="1"></path>
       </svg>`;
+    
+    // Following (filled)
     const unfollowIcon = () => `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="#1976d2" 
-          d="M12 12c2.7 0 5-2.3 5-5S14.7 2 12 2 7 4.3 7 7s2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="#000000" class="bi bi-person-fill-x" viewBox="0 0 16 16" height="20" width="20">
+        <path d="M11 5a3 3 0 1 1 -6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544 -3.393Q8.844 9.002 8 9c-5 0 -6 3 -6 4" stroke-width="1"></path>
+        <path d="M12.5 16a3.5 3.5 0 1 0 0 -7 3.5 3.5 0 0 0 0 7m-0.646 -4.854 0.646 0.647 0.646 -0.647a0.5 0.5 0 0 1 0.708 0.708l-0.647 0.646 0.647 0.646a0.5 0.5 0 0 1 -0.708 0.708l-0.646 -0.647 -0.646 0.647a0.5 0.5 0 0 1 -0.708 -0.708l0.647 -0.646 -0.647 -0.646a0.5 0.5 0 0 1 0.708 -0.708" stroke-width="1"></path>
       </svg>`;
     
     async function loadProfile() {
@@ -195,7 +205,7 @@
             const result = await res.json();
     
             if (result.success) {
-              button.innerHTML = result.following ? unfollowIcon() : followIcon();
+              button.innerHTML = result.followed ? unfollowIcon() : followIcon();
             } else {
               alert(result.error || "Follow action failed.");
             }
