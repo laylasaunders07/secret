@@ -127,52 +127,74 @@
   }
 
   async function loadProfile() {
-    if (!id) { document.body.innerHTML = "<p>User ID not provided.</p>"; return; }
-
-    const res = await fetch(`${API_URL}?type=user&id=${id}`);
-    const data = await res.json();
-    if (data.error) { document.body.innerHTML = `<p>${data.error}</p>`; return; }
-
-    const user = data.user;
-    const currentUser = await loadCurrentUser();
-
-    // Tabs
+    if (!id) {
+      document.body.innerHTML = "<p>User ID not provided.</p>";
+      return;
+    }
+  
+    // Tabs setup
     document.getElementById("postsTab").href = `user.html?id=${id}`;
     document.getElementById("followingTab").href = `following.html?id=${id}`;
     document.getElementById("followersTab").href = `followers.html?id=${id}`;
+  
+    const res = await fetch(`${API_URL}?type=user&id=${id}`);
+    const data = await res.json();
     if (data.counts) {
       document.getElementById("postsTab").innerHTML = `${data.counts.posts} Posts`;
       document.getElementById("followingTab").innerHTML = `${data.counts.following} Following`;
       document.getElementById("followersTab").innerHTML = `${data.counts.followers} Followers`;
     }
-
+    if (data.error) {
+      document.body.innerHTML = `<p>${data.error}</p>`;
+      return;
+    }
+  
+    const user = data.user;
     document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
     document.getElementById("bio").textContent = user.bio || "No bio provided.";
     document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`;
-
+  
     const followBtn = document.getElementById("followBtn");
-    if (!currentUser || currentUser.id === user.id || currentUser.username === user.username) {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  
+    // 🔹 If not logged in, hide follow button
+    if (!storedUser || !storedUser.username) {
       followBtn.style.display = "none";
     } else {
-      followBtn.style.display = "inline-flex";
-      setupFollowButton(currentUser, user, followBtn);
+      // 🔹 Fetch full current user info (including id)
+      const userRes = await fetch(`${API_URL}?type=userByUsername&username=${encodeURIComponent(storedUser.username)}`);
+      const userData = await userRes.json();
+  
+      if (userData && userData.user) {
+        const currentUser = userData.user;
+        // Hide follow button on own profile
+        if (currentUser.id == user.id) {
+          followBtn.style.display = "none";
+        } else {
+          followBtn.style.display = "inline-flex";
+          setupFollowButton(currentUser, user, followBtn);
+        }
+      }
     }
-
+  
     allPosts = data.posts || [];
     renderPosts(allPosts);
   }
-
+  
   async function setupFollowButton(currentUser, viewedUser, button) {
     try {
-      const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.username)}`);
+      // ✅ Check if the current user follows this profile
+      const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.id)}`);
       const data = await res.json();
-      const list = data.following || [];
-      const isFollowing = list.map(String).includes(String(viewedUser.id));
+      const isFollowing = (data.following || []).includes(viewedUser.id);
+  
       button.innerHTML = isFollowing ? unfollowIcon() : followIcon();
-
+  
+      // ✅ Click handler
       button.onclick = async () => {
         button.disabled = true;
         button.classList.add("loading");
+  
         try {
           const res = await fetch(API_URL, {
             method: "POST",
@@ -180,12 +202,15 @@
             body: JSON.stringify({
               key: SECRET_KEY,
               action: "follow",
-              followerId: currentUser.id,  // ✅ correct DB ID
+              followerId: currentUser.id,
               followedId: viewedUser.id
             })
           });
+  
           const result = await res.json();
+  
           if (result.success) {
+            // Toggle icon immediately for better UX
             button.innerHTML = result.followed ? unfollowIcon() : followIcon();
           } else {
             alert(result.error || "Follow action failed.");
@@ -194,6 +219,7 @@
           console.error("Follow error:", err);
           alert("Could not follow user: " + err.message);
         }
+  
         button.disabled = false;
         button.classList.remove("loading");
       };
