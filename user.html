@@ -184,7 +184,7 @@
   async function setupFollowButton(currentUser, viewedUser, button) {
     try {
       // ✅ Check if the current user follows this profile
-      const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.id)}`);
+      const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.username)}`);
       const data = await res.json();
       const isFollowing = (data.following || []).includes(viewedUser.id);
   
