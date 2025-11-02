@@ -5,7 +5,7 @@
   <title>User Profile</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 2em; max-width: 600px; }
-    a { color: #007bff; text-decoration: none; }
+    a { color: #1976d2; text-decoration: none; }
     a:hover { text-decoration: underline; }
     #backLink { display: inline-block; margin-bottom: 1em; }
 
@@ -20,9 +20,8 @@
     }
 
     #username { font-size: 1.4em; margin-bottom: 0.2em; }
-    #username a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
     #bio { font-size: 1.05em; margin-bottom: 0.5em; }
-    #dateCreated { font-size: 0.9em; margin-bottom: 0.5em; color: #555; }
+    #dateCreated { font-size: 0.9em; color: #555; }
 
     .post {
       background: #f5f5f5;
@@ -33,7 +32,7 @@
     }
     .post:hover { background: #e3f2fd !important; }
     .post-header { font-weight: bold; font-size: 1.1em; }
-    .post-header a { font-size: 1em; margin-left: 0.5em; font-weight: normal; }
+    .post-header a { margin-left: 0.5em; font-weight: normal; }
     .post-message { margin: 0.5em 0; }
     small { color: gray; font-size: 0.85em; }
 
@@ -52,7 +51,7 @@
     }
     .follow-btn:hover { background: rgba(25,118,210,0.12); }
     .follow-btn svg { width: 20px; height: 20px; fill: #1976d2; }
-    .follow-btn.loading svg { animation: spin 0.8s linear infinite; }
+    .follow-btn.loading svg { animation: spin 0.6s linear infinite; opacity: 0.6; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     .tabs {
@@ -62,7 +61,7 @@
       margin: 1.2em 0 1em 0;
       font-size: 1.25em;
     }
-    .tabs a { color: black; text-decoration: none; font-weight: normal; transition: font-weight 0.15s ease, color 0.15s ease; }
+    .tabs a { color: black; text-decoration: none; font-weight: normal; transition: font-weight 0.15s ease; }
     .tabs a:hover { font-weight: bold; color: black; }
     .tabs a.active { font-weight: bold; color: black; cursor: default; }
 
@@ -83,7 +82,7 @@
       <p id="bio"></p>
       <p id="dateCreated"><em>Date joined: [placeholder]</em></p>
     </div>
-    <button id="followBtn" class="follow-btn" title="Follow" style="display:none;"></button>
+    <button id="followBtn" class="follow-btn" style="display:none;"></button>
   </div>
 
   <div class="tabs">
@@ -96,105 +95,97 @@
   <div id="posts"></div>
 
   <script>
-  const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
-  const SECRET_KEY = "alva-the-fortnite-god";
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  let allPosts = [];
+    const API_URL = "https://gentle-wind-dea4.silly-7f7.workers.dev";
+    const SECRET_KEY = "alva-the-fortnite-god";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
 
-  const followIcon = () => `
-    <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-person-check" viewBox="0 0 16 16" height="20" width="20">
-      <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"></path>
-      <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"></path>
-    </svg>`;
-  const unfollowIcon = () => `
-    <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-person-fill-x" viewBox="0 0 16 16" height="20" width="20">
-      <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" stroke-width="1"></path>
-      <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708" stroke-width="1"></path>
-    </svg>`;
+    let allPosts = [];
+    let followingSet = new Set();
 
-  async function loadCurrentUser() {
-    const stored = JSON.parse(localStorage.getItem("user") || "null");
-    if (!stored || !stored.username) return null;
-    try {
-      const res = await fetch(`${API_URL}?userByUsername=${encodeURIComponent(stored.username)}`);
-      const data = await res.json();
-      return data.user || null;
-    } catch (err) {
-      console.warn("Could not load current user:", err);
-      return null;
+    // === SVG ICONS (copied from users.html) ===
+    function svgFollowOutline() {
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="bi bi-person-check" viewBox="0 0 16 16">
+        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514"/>
+        <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+        <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+      </svg>`;
     }
-  }
+    function svgFollowFilled() {
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="bi bi-person-fill-x" viewBox="0 0 16 16">
+        <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" stroke-width="1"></path>
+        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708" stroke-width="1"></path>
+      </svg>`;
+    }
 
-  async function loadProfile() {
-    if (!id) {
-      document.body.innerHTML = "<p>User ID not provided.</p>";
-      return;
-    }
-  
-    // Tabs setup
-    document.getElementById("postsTab").href = `user.html?id=${id}`;
-    document.getElementById("followingTab").href = `following.html?id=${id}`;
-    document.getElementById("followersTab").href = `followers.html?id=${id}`;
-  
-    const res = await fetch(`${API_URL}?type=user&id=${id}`);
-    const data = await res.json();
-    if (data.counts) {
-      document.getElementById("postsTab").innerHTML = `${data.counts.posts} Posts`;
-      document.getElementById("followingTab").innerHTML = `${data.counts.following} Following`;
-      document.getElementById("followersTab").innerHTML = `${data.counts.followers} Followers`;
-    }
-    if (data.error) {
-      document.body.innerHTML = `<p>${data.error}</p>`;
-      return;
-    }
-  
-    const user = data.user;
-    document.getElementById("username").innerHTML = `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
-    document.getElementById("bio").textContent = user.bio || "No bio provided.";
-    document.getElementById("dateCreated").innerHTML = `<em>Date joined: [placeholder]</em>`;
-  
-    const followBtn = document.getElementById("followBtn");
-    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-  
-    // 🔹 If not logged in, hide follow button
-    if (!storedUser || !storedUser.username) {
-      followBtn.style.display = "none";
-    } else {
-      // 🔹 Fetch full current user info (including id)
-      const userRes = await fetch(`${API_URL}?type=userByUsername&username=${encodeURIComponent(storedUser.username)}`);
-      const userData = await userRes.json();
-  
-      if (userData && userData.user) {
-        const currentUser = userData.user;
-        // Hide follow button on own profile
-        if (currentUser.id == user.id) {
-          followBtn.style.display = "none";
-        } else {
-          followBtn.style.display = "inline-flex";
-          setupFollowButton(currentUser, user, followBtn);
-        }
+    // === Load following list for current user ===
+    async function loadFollowingForCurrentUser() {
+      followingSet = new Set();
+      const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+      if (!currentUser || !currentUser.username) return;
+      try {
+        const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.username)}`);
+        const data = await res.json();
+        const list = data.following || [];
+        list.forEach(id => followingSet.add(String(id)));
+      } catch (err) {
+        console.warn("Could not load following list:", err);
       }
     }
-  
-    allPosts = data.posts || [];
-    renderPosts(allPosts);
-  }
-  
-  async function setupFollowButton(currentUser, viewedUser, button) {
-    try {
-      // ✅ Check if the current user follows this profile
-      const res = await fetch(`${API_URL}?followingFor=${encodeURIComponent(currentUser.username)}`);
+
+    async function loadProfile() {
+      if (!id) {
+        document.body.innerHTML = "<p>User ID not provided.</p>";
+        return;
+      }
+
+      document.getElementById("postsTab").href = `user.html?id=${id}`;
+      document.getElementById("followingTab").href = `following.html?id=${id}`;
+      document.getElementById("followersTab").href = `followers.html?id=${id}`;
+
+      const res = await fetch(`${API_URL}?type=user&id=${id}`);
       const data = await res.json();
-      const isFollowing = (data.following || []).includes(viewedUser.id);
-  
-      button.innerHTML = isFollowing ? unfollowIcon() : followIcon();
-  
-      // ✅ Click handler
+      if (data.error) {
+        document.body.innerHTML = `<p>${data.error}</p>`;
+        return;
+      }
+
+      const user = data.user;
+      document.getElementById("username").innerHTML =
+        `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
+      document.getElementById("bio").textContent = user.bio || "No bio provided.";
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: ${user.created || "—"}</em>`;
+
+      if (data.counts) {
+        document.getElementById("postsTab").textContent = `${data.counts.posts} Posts`;
+        document.getElementById("followingTab").textContent = `${data.counts.following} Following`;
+        document.getElementById("followersTab").textContent = `${data.counts.followers} Followers`;
+      }
+
+      // Handle follow button
+      await renderFollowButton(user);
+
+      allPosts = data.posts || [];
+      renderPosts(allPosts);
+    }
+
+    async function renderFollowButton(viewedUser) {
+      const button = document.getElementById("followBtn");
+      const loggedIn = JSON.parse(localStorage.getItem("user") || "null");
+      if (!loggedIn || !loggedIn.username) return;
+
+      await loadFollowingForCurrentUser();
+
+      const isMe = String(loggedIn.pk_user_id) === String(viewedUser.id);
+      if (isMe) { button.style.display = "none"; return; }
+
+      const followed = followingSet.has(String(viewedUser.id));
+      button.style.display = "inline-flex";
+      button.innerHTML = followed ? svgFollowFilled() : svgFollowOutline();
+      button.setAttribute("aria-pressed", followed);
+
       button.onclick = async () => {
-        button.disabled = true;
         button.classList.add("loading");
-  
         try {
           const res = await fetch(API_URL, {
             method: "POST",
@@ -202,60 +193,56 @@
             body: JSON.stringify({
               key: SECRET_KEY,
               action: "follow",
-              followerId: currentUser.id,
+              followerId: loggedIn.pk_user_id,
               followedId: viewedUser.id
             })
           });
-  
           const result = await res.json();
-  
+          button.classList.remove("loading");
           if (result.success) {
-            // Toggle icon immediately for better UX
-            button.innerHTML = result.followed ? unfollowIcon() : followIcon();
+            const nowFollowed = !!result.followed;
+            button.innerHTML = nowFollowed ? svgFollowFilled() : svgFollowOutline();
+            button.setAttribute("aria-pressed", nowFollowed);
+            if (nowFollowed) followingSet.add(String(viewedUser.id));
+            else followingSet.delete(String(viewedUser.id));
           } else {
             alert(result.error || "Follow action failed.");
           }
         } catch (err) {
-          console.error("Follow error:", err);
+          button.classList.remove("loading");
           alert("Could not follow user: " + err.message);
         }
-  
-        button.disabled = false;
-        button.classList.remove("loading");
       };
-    } catch (err) {
-      console.warn("Failed to get following state:", err);
     }
-  }
 
-  function renderPosts(posts) {
-    const container = document.getElementById("posts");
-    if (!posts.length) {
-      container.innerHTML = "<p>No posts yet.</p>";
-      return;
-    }
-    container.innerHTML = posts.map(p => `
-      <div class="post" onclick="window.location.href='post.html?id=${p.id}&from=user.html?id=${id}'">
-        <div class="post-header">${p.name || "Unknown User"} 
-          <a href="user.html?id=${p.userId}&from=user.html">@${p.username}</a>
+    function renderPosts(posts) {
+      const container = document.getElementById("posts");
+      if (!posts.length) {
+        container.innerHTML = "<p>No posts yet.</p>";
+        return;
+      }
+      container.innerHTML = posts.map(p => `
+        <div class="post" onclick="window.location.href='post.html?id=${p.id}&from=user.html?id=${id}'">
+          <div class="post-header">${p.name || "Unknown"} 
+            <a href="user.html?id=${p.userId}&from=user.html">@${p.username}</a>
+          </div>
+          <div class="post-message">${p.message}</div>
+          <small>${new Date(p.timestamp).toLocaleString()}</small>
         </div>
-        <div class="post-message">${p.message}</div>
-        <small>${new Date(p.timestamp).toLocaleString()}</small>
-      </div>
-    `).join("");
-  }
+      `).join("");
+    }
 
-  function filterPosts() {
-    const term = document.getElementById("search").value.toLowerCase();
-    const filtered = allPosts.filter(p =>
-      (p.message || "").toLowerCase().includes(term) ||
-      (p.username || "").toLowerCase().includes(term) ||
-      (p.name || "").toLowerCase().includes(term)
-    );
-    renderPosts(filtered);
-  }
+    function filterPosts() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const filtered = allPosts.filter(p =>
+        (p.message || "").toLowerCase().includes(term) ||
+        (p.username || "").toLowerCase().includes(term) ||
+        (p.name || "").toLowerCase().includes(term)
+      );
+      renderPosts(filtered);
+    }
 
-  loadProfile();
+    loadProfile();
   </script>
 </body>
 </html>
