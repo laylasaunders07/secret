@@ -62,6 +62,18 @@
     height: 22px;
     fill: #1976d2;
   }
+
+  /* Loading / spinning state for send button */
+  .post-card button.loading svg {
+    opacity: 0.6;
+    filter: grayscale(1);
+    animation: spin 0.6s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
   
   /* Main post styling */
   .post-main {
