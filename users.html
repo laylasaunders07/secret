@@ -196,7 +196,7 @@
             <strong>${u.name || u.username}</strong>
             <a href="user.html?id=${u.id}&from=users.html">@${u.username}</a><br>
             <em>${u.bio || "No bio yet"}</em><br>
-            <small class="user-followers">Followers: —</small>
+            <small class="user-followers">${u.followers} Follower${u.followers === 1 ? '' : 's'}</small>
           </div>
           ${buttonHtml}
         </div>
@@ -291,7 +291,7 @@
               <a href="user.html?id=${me.id || userData.pk_user_id}&from=users.html">@${userData.username}</a>
             </div>
             <div class="user-bio">${me.bio || userData.bio || "No bio yet"}</div>
-            <div class="user-followers">Followers: —</div>
+            <div class="user-followers">${me.followers ?? 0} Follower${me.followers === 1 ? '' : 's'}</div>
           </div>
           <button onclick="logout()" class="logout-btn" title="Log out">${svgLogout()}</button>
         </div>`;
@@ -305,7 +305,7 @@
               <a href="user.html?id=${userData.pk_user_id}&from=users.html">@${userData.username}</a>
             </div>
             <div class="user-bio">${userData.bio || "No bio yet"}</div>
-            <div class="user-followers">Followers: —</div>
+            <div class="user-followers">${me.followers ?? 0} Follower${me.followers === 1 ? '' : 's'}</div>
           </div>
           <button onclick="logout()" class="logout-btn" title="Log out">${svgLogout()}</button>
         </div>`;
