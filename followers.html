@@ -76,6 +76,30 @@
     const id = params.get("id");
     let allList = [];
 
+    function parseBackendDate(dateStr) {
+      if (!dateStr) return "Invalid date";
+    
+      if (dateStr instanceof Date)
+        return dateStr.toLocaleString("en-GB", { hour12: true });
+    
+      const tryNative = new Date(dateStr);
+      if (!isNaN(tryNative))
+        return tryNative.toLocaleString("en-GB", { hour12: true });
+    
+      const parts = dateStr.split(" ");
+      const datePart = parts[0] || "";
+      const timePart = parts[1] || "00:00:00";
+      const [d, m, y] = datePart.split(/[\/\-]/).map(Number);
+      if (!d || !m || !y) return "Invalid date";
+    
+      const parsed = new Date(
+        `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`
+      );
+      if (isNaN(parsed)) return "Invalid date";
+    
+      return parsed.toLocaleString("en-GB", { hour12: true });
+    }
+
     async function loadProfile() {
       const res = await fetch(`${API_URL}?type=user&id=${id}`);
       const data = await res.json();
@@ -88,7 +112,7 @@
       document.getElementById("username").innerHTML =
         `${user.name} <a href="user.html?id=${user.id}&from=followers.html">@${user.username}</a>`;
       document.getElementById("bio").textContent = user.bio || "No bio provided.";
-      document.getElementById("dateCreated").innerHTML = `<em>Date joined: ${user.created || "—"}</em>`;
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: ${parseBackendDate(user.created) || "—"}</em>`;
 
       if (data.counts) {
         document.getElementById("postsTab").textContent = `${data.counts.posts} Posts`;
@@ -121,7 +145,7 @@
           <div class="post-header">${p.name || "Unknown"} 
             <a href="user.html?id=${p.id}&from=followers.html">@${p.username}</a>
           </div>
-          <small>${new Date(p.timestamp).toLocaleString()}</small>
+          <small>${parseBackendDate(p.timestamp)}</small>
         </div>
       `).join("");
     }
