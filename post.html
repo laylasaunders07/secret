@@ -167,24 +167,32 @@ function likedHeartSVG() {
 }
 
 function parseBackendDate(dateStr) {
-  if (!dateStr) return new Date(NaN);
+  if (!dateStr) return "Invalid date";
 
-  // If it's already a Date object, return it
-  if (dateStr instanceof Date) return dateStr;
+  // If it's already a Date object
+  if (dateStr instanceof Date) return dateStr.toLocaleString("en-GB", {
+    hour12: true,
+  });
 
-  // If it's already ISO-like or works natively, try it first
+  // Try native parsing first
   const tryNative = new Date(dateStr);
-  if (!isNaN(tryNative)) return tryNative;
+  if (!isNaN(tryNative)) {
+    return tryNative.toLocaleString("en-GB", { hour12: true });
+  }
 
-  // Otherwise, try to parse manually (DD/MM/YYYY HH:mm:ss)
+  // Manual parse for DD/MM/YYYY HH:mm:ss
   const parts = dateStr.split(" ");
   const datePart = parts[0] || "";
   const timePart = parts[1] || "00:00:00";
   const [d, m, y] = datePart.split(/[\/\-]/).map(Number);
+  if (!d || !m || !y) return "Invalid date";
 
-  if (!d || !m || !y) return new Date(NaN);
+  const parsed = new Date(
+    `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`
+  );
+  if (isNaN(parsed)) return "Invalid date";
 
-  return new Date(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`);
+  return parsed.toLocaleString("en-GB", { hour12: true });
 }
 
 async function loadPost() {
@@ -233,7 +241,7 @@ async function loadPost() {
           <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
         </div>
         <div class="post-message">${p.message}</div>
-        <small>${parseBackendDate(p.timestamp).toLocaleString("en-GB")}</small>
+        <small>${parseBackendDate(p.timestamp)}</small>
       </div>
       <button class="like-btn" title="Like" data-postid="${p.id}">
         ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
@@ -281,7 +289,7 @@ function renderComments(comments) {
         <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
       </div>
       <div class="post-message">${cm.comment}</div>
-      <small>${parseBackendDate(cm.timestamp).toLocaleString("en-GB")}</small>
+      <small>${parseBackendDate(cm.timestamp)}</small>
     </div>
   `).join("");
 }
