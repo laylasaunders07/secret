@@ -144,6 +144,33 @@
       }
     }
 
+    function parseBackendDate(dateStr) {
+      if (!dateStr) return "Invalid date";
+    
+      // If it's already a Date object
+      if (dateStr instanceof Date)
+        return dateStr.toLocaleString("en-GB", { hour12: true });
+    
+      // Try native parsing (works for ISO like 2025-10-22T08:24:18.000Z)
+      const tryNative = new Date(dateStr);
+      if (!isNaN(tryNative))
+        return tryNative.toLocaleString("en-GB", { hour12: true });
+    
+      // Manual parse for DD/MM/YYYY HH:mm:ss
+      const parts = dateStr.split(" ");
+      const datePart = parts[0] || "";
+      const timePart = parts[1] || "00:00:00";
+      const [d, m, y] = datePart.split(/[\/\-]/).map(Number);
+      if (!d || !m || !y) return "Invalid date";
+    
+      const parsed = new Date(
+        `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`
+      );
+      if (isNaN(parsed)) return "Invalid date";
+    
+      return parsed.toLocaleString("en-GB", { hour12: true });
+    }
+
     async function loadProfile() {
       if (!id) {
         document.body.innerHTML = "<p>User ID not provided.</p>";
@@ -165,7 +192,7 @@
       document.getElementById("username").innerHTML =
         `${user.name} <a href="user.html?id=${user.id}&from=user.html">@${user.username}</a>`;
       document.getElementById("bio").textContent = user.bio || "No bio provided.";
-      document.getElementById("dateCreated").innerHTML = `<em>Date joined: ${user.created || "—"}</em>`;
+      document.getElementById("dateCreated").innerHTML = `<em>Date joined: ${parseBackendDate(user.created) || "—"}</em>`;
 
       if (data.counts) {
         document.getElementById("postsTab").textContent = `${data.counts.posts} Posts`;
@@ -248,7 +275,7 @@
             <a href="user.html?id=${p.userId}&from=user.html">@${p.username}</a>
           </div>
           <div class="post-message">${p.message}</div>
-          <small>${new Date(p.timestamp).toLocaleString()}</small>
+          <small>${parseBackendDate(p.timestamp)}</small>
         </div>
       `).join("");
     }
