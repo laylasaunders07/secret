@@ -215,3 +215,123 @@ small {
 }
 .post-header { font-weight: bold; font-size: 1.1em; }
 .post-header a { margin-left: 0.5em; font-weight: normal; }
+
+/* ========== USERS PAGE ========== */
+
+/* Logged-in user card (top pale blue box) */
+.user-card {
+  background: #e3f2fd;
+  border-radius: 12px;
+  padding: 1em;
+  margin-bottom: 1.5em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+.user-card .user-info {
+  flex-grow: 1;
+}
+.user-card .user-header {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+.user-card .user-header a {
+  margin-left: 0.4em;
+  font-weight: 400;
+  font-size: 0.95em;
+  color: #1976d2;
+  text-decoration: none;
+}
+.user-card .user-bio {
+  margin: 0.3em 0;
+  font-size: 0.95em;
+  color: #333;
+}
+.user-card .user-followers {
+  font-size: 0.85em;
+  color: gray;
+}
+
+/* User list card (other users) */
+.user {
+  background: #f5f5f5;
+  padding: 0.8em;
+  margin: 0.5em 0;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: default;
+  transition: background 0.2s ease;
+}
+.user:hover {
+  background: #e3f2fd !important;
+}
+.user strong {
+  font-size: 1.05em;
+}
+.user small {
+  color: gray;
+}
+
+/* Follow/logout buttons */
+.follow-btn, .logout-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.3s ease;
+}
+.follow-btn:hover, .logout-btn:hover {
+  background: rgba(25,118,210,0.12);
+}
+.follow-btn svg, .logout-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #1976d2;
+}
+.follow-btn.loading svg {
+  opacity: 0.6;
+  filter: grayscale(1);
+  animation: spin 0.6s linear infinite;
+}
+
+/* Search input */
+#searchUsers {
+  width: 100%;
+  padding: 0.6em;
+  margin: 0.5em 0 1em 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Tabs navigation */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  margin: 1.2em 0 1em 0;
+  font-size: 1.25em;
+}
+.tabs a {
+  color: black;
+  text-decoration: none;
+  font-weight: normal;
+  transition: font-weight 0.15s ease, color 0.15s ease;
+}
+.tabs a:hover {
+  font-weight: bold;
+  color: black;
+}
+.tabs a.active {
+  font-weight: bold;
+  color: black;
+  cursor: default;
+}
