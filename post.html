@@ -166,6 +166,13 @@ function likedHeartSVG() {
   </svg>`;
 }
 
+function parseBackendDate(dateStr) {
+  // Expected format: "22/10/2025 09:24:18"
+  const [datePart, timePart] = dateStr.split(" ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  return new Date(`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T${timePart || "00:00:00"}`);
+}
+
 async function loadPost() {
   if (!postId) { document.body.innerHTML = "<p>Post ID not provided.</p>"; return; }
 
@@ -212,7 +219,7 @@ async function loadPost() {
           <a href="user.html?id=${p.userId}&from=post.html" style="margin-left: 0.3em;">@${p.username}</a>
         </div>
         <div class="post-message">${p.message}</div>
-        <small>${new Date(p.timestamp).toLocaleString()}</small>
+        <small>${parseBackendDate(p.timestamp).toLocaleString("en-GB")}</small>
       </div>
       <button class="like-btn" title="Like" data-postid="${p.id}">
         ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
@@ -260,7 +267,7 @@ function renderComments(comments) {
         <a href="user.html?id=${cm.userId}&from=post.html" style="margin-left: 0.3em;">@${cm.username}</a>
       </div>
       <div class="post-message">${cm.comment}</div>
-      <small>${new Date(cm.timestamp).toLocaleString()}</small>
+      <small>${parseBackendDate(cm.timestamp).toLocaleString("en-GB")}</small>
     </div>
   `).join("");
 }
