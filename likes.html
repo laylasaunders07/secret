@@ -96,6 +96,33 @@
     const postId = urlParams.get("id");
     let allLikes = []; // ✅ properly declared once at top
 
+    function parseBackendDate(dateStr) {
+      if (!dateStr) return "Invalid date";
+    
+      // If it's already a Date object
+      if (dateStr instanceof Date)
+        return dateStr.toLocaleString("en-GB", { hour12: true });
+    
+      // Try native parsing first
+      const tryNative = new Date(dateStr);
+      if (!isNaN(tryNative))
+        return tryNative.toLocaleString("en-GB", { hour12: true });
+    
+      // Manual parse for DD/MM/YYYY HH:mm:ss
+      const parts = dateStr.split(" ");
+      const datePart = parts[0] || "";
+      const timePart = parts[1] || "00:00:00";
+      const [d, m, y] = datePart.split(/[\/\-]/).map(Number);
+      if (!d || !m || !y) return "Invalid date";
+    
+      const parsed = new Date(
+        `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`
+      );
+      if (isNaN(parsed)) return "Invalid date";
+    
+      return parsed.toLocaleString("en-GB", { hour12: true });
+    }
+
     async function loadPost() {
       if (!postId) {
         document.body.innerHTML = "<p>Post ID not provided.</p>";
@@ -123,7 +150,7 @@
             <a href="user.html?id=${p.userId}&from=likes.html" style="margin-left: 0.3em;">@${p.username}</a>
           </div>
           <div class="post-message">${p.message}</div>
-          <small>${new Date(p.timestamp).toLocaleString()}</small>
+          <small>${parseBackendDate(p.timestamp)}</small>
         </div>
       `;
 
@@ -150,7 +177,7 @@
             <strong>${l.name || "Unknown User"}</strong>
             <a href="user.html?id=${l.userId}&from=likes.html">@${l.username}</a>
           </div>
-          <small>${new Date(l.timestamp).toLocaleString()}</small>
+          <small>${parseBackendDate(l.timestamp)}</small>
         </div>
       `).join("");
     }
