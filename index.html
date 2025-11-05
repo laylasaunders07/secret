@@ -305,21 +305,25 @@
       container.innerHTML = "";
     
       const user = JSON.parse(localStorage.getItem("user") || "null");
-      let likedPosts = [];
+      let likedSet = new Set();
     
-      // ✅ Fetch liked posts for current user (if logged in)
+      // Fetch liked posts for current user (if logged in)
       if (user && user.username) {
         try {
           const res = await fetch(`${API_URL}?likesFor=${encodeURIComponent(user.username)}`);
           const likeData = await res.json();
-          likedPosts = likeData.likedPosts || []; // server should return an array of liked post IDs
+          const likedPosts = likeData.likedPosts || []; // server returns an array of post IDs
+          // Normalize to strings to avoid type mismatch issues (number vs string)
+          likedSet = new Set(likedPosts.map(id => String(id)));
         } catch (err) {
           console.warn("Could not load liked posts:", err);
+          likedSet = new Set();
         }
       }
     
       data.forEach(msg => {
-        const isLiked = likedPosts.includes(msg.id);
+        // Determine liked state using normalized string comparison
+        const isLiked = likedSet.has(String(msg.id));
     
         const div = document.createElement("div");
         div.className = "message";
@@ -331,15 +335,15 @@
             </a>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <div class="post-message" style="flex:1;">${msg.message}</div>
-          <button class="like-btn" title="Like" data-postid="${msg.id}">
-            ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
-          </button>
-        </div>
-        <small>${msg.likes || 0} Like${(msg.likes || 0) === 1 ? '' : 's'}</small>
+            <div class="post-message" style="flex:1;">${msg.message}</div>
+            <button class="like-btn" title="Like" data-postid="${msg.id}" aria-pressed="${isLiked}">
+              ${isLiked ? likedHeartSVG() : unlikedHeartSVG()}
+            </button>
+          </div>
+          <small>${(msg.likes || 0)} Like${(msg.likes || 0) === 1 ? '' : 's'}</small>
         `;
     
-        // 👇 Clicking anywhere (except button) opens post
+        // Clicking anywhere (except button) opens post
         div.addEventListener("click", e => {
           if (e.target.closest(".like-btn")) return;
           if (e.target.tagName.toLowerCase() !== "a") {
@@ -347,14 +351,14 @@
           }
         });
     
-        // 👇 Button click logic
+        // Button click logic
         const likeButton = div.querySelector(".like-btn");
         likeButton.addEventListener("click", async e => {
           e.preventDefault();
           e.stopPropagation();
     
-          const user = JSON.parse(localStorage.getItem("user") || "null");
-          if (!user || !user.username) {
+          const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+          if (!currentUser || !currentUser.username) {
             alert("You need to be logged in to like posts.");
             return;
           }
@@ -369,7 +373,7 @@
                 key: SECRET_KEY,
                 action: "like",
                 postId: msg.id,
-                username: user.username
+                username: currentUser.username
               })
             });
     
@@ -378,13 +382,33 @@
     
             if (result.error) {
               alert(result.error);
-            } else if (result.success) {
-              // Toggle based on backend state
-              if (result.liked) {
-                likeButton.innerHTML = likedHeartSVG();
-              } else {
-                likeButton.innerHTML = unlikedHeartSVG();
-              }
+              return;
+            }
+    
+            // Update button SVG & aria-pressed based on backend result
+            if (result.liked) {
+              likeButton.innerHTML = likedHeartSVG();
+              likeButton.setAttribute("aria-pressed", "true");
+              likedSet.add(String(msg.id));
+            } else {
+              likeButton.innerHTML = unlikedHeartSVG();
+              likeButton.setAttribute("aria-pressed", "false");
+              likedSet.delete(String(msg.id));
+            }
+    
+            // Update like count text (use result.likeCount if backend returns it, otherwise adjust locally)
+            const likeLabel = div.querySelector("small");
+            let newCount = null;
+            if (typeof result.likeCount !== "undefined") {
+              newCount = Number(result.likeCount);
+            } else {
+              // adjust client-side: increment or decrement based on result.liked
+              const current = Number(msg.likes || 0);
+              newCount = result.liked ? current + 1 : Math.max(0, current - 1);
+            }
+            msg.likes = newCount;
+            if (likeLabel) {
+              likeLabel.textContent = `${msg.likes} Like${msg.likes === 1 ? '' : 's'}`;
             }
           } catch (err) {
             likeButton.classList.remove("loading");
