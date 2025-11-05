@@ -167,10 +167,24 @@ function likedHeartSVG() {
 }
 
 function parseBackendDate(dateStr) {
-  // Expected format: "22/10/2025 09:24:18"
-  const [datePart, timePart] = dateStr.split(" ");
-  const [day, month, year] = datePart.split("/").map(Number);
-  return new Date(`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T${timePart || "00:00:00"}`);
+  if (!dateStr) return new Date(NaN);
+
+  // If it's already a Date object, return it
+  if (dateStr instanceof Date) return dateStr;
+
+  // If it's already ISO-like or works natively, try it first
+  const tryNative = new Date(dateStr);
+  if (!isNaN(tryNative)) return tryNative;
+
+  // Otherwise, try to parse manually (DD/MM/YYYY HH:mm:ss)
+  const parts = dateStr.split(" ");
+  const datePart = parts[0] || "";
+  const timePart = parts[1] || "00:00:00";
+  const [d, m, y] = datePart.split(/[\/\-]/).map(Number);
+
+  if (!d || !m || !y) return new Date(NaN);
+
+  return new Date(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${timePart}`);
 }
 
 async function loadPost() {
