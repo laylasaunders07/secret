@@ -1,8 +1,9 @@
-/* ===== General Body & Links ===== */
+/* ---------- Global ---------- */
 body {
   font-family: system-ui, sans-serif;
   margin: 2em;
   max-width: 600px;
+  color: #000;
 }
 
 a {
@@ -14,14 +15,13 @@ a:hover {
   text-decoration: underline;
 }
 
-/* ===== Headings ===== */
-h1 { font-size: 1.5em; font-weight: bold; margin: 0.2em 0; }
-h2 { font-size: 1.3em; font-weight: bold; margin: 0.2em 0; }
-h3 { font-size: 1.1em; font-weight: bold; margin: 0.2em 0; }
+/* ---------- Back Link ---------- */
+#backLink {
+  display: inline-block;
+  margin-bottom: 1em;
+}
 
-strong { font-weight: bold; }
-
-/* ===== Profile Card ===== */
+/* ---------- Profile Card ---------- */
 .profile-card {
   background: #e3f2fd;
   padding: 1em;
@@ -32,24 +32,51 @@ strong { font-weight: bold; }
   align-items: center;
 }
 
-/* Username, bio, date */
-#username { font-size: 1.5em; margin-bottom: 0.2em; }
-#bio { font-size: 1.05em; margin-bottom: 0.5em; }
-#dateCreated { font-size: 0.9em; color: #555; }
+.profile-card h1,
+.profile-card p {
+  margin: 0;
+}
 
-/* ===== Posts ===== */
-.post {
+#username {
+  font-size: 1.4em;
+  margin-bottom: 0.2em;
+}
+
+#bio {
+  font-size: 1.05em;
+  margin-bottom: 0.5em;
+}
+
+#dateCreated {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* ---------- Post / Card Styles ---------- */
+.post, .main-post-card {
   background: #f5f5f5;
   padding: 0.8em;
   margin: 0.5em 0;
-  border-radius: 6px;
-  transition: background 0.2s;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
+/* Hover effect for posts/cards */
+.post:hover, .main-post-card:hover {
+  background: #e3f2fd !important;
+}
+
+/* Main post / main user card sizing */
+.main-post-card, .profile-card-main {
+  font-size: 1.1em;
+  padding: 1em;
+}
+
+/* Post header */
 .post-header {
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 
 .post-header a {
@@ -57,22 +84,18 @@ strong { font-weight: bold; }
   font-weight: normal;
 }
 
-.post-message { margin: 0.5em 0; }
+/* Post message */
+.post-message {
+  margin: 0.5em 0;
+}
 
+/* Small text */
 small {
   color: gray;
   font-size: 0.85em;
 }
 
-/* Main post card - matches main profile card */
-.post.main {
-  background: #e3f2fd;
-  padding: 1em;
-  border-radius: 8px;
-  font-size: 1.1em;
-}
-
-/* ===== Follow Button ===== */
+/* ---------- Buttons ---------- */
 .follow-btn {
   flex-shrink: 0;
   display: inline-flex;
@@ -87,18 +110,27 @@ small {
   transition: background 0.12s ease, transform 0.3s ease;
 }
 
-.follow-btn:hover { background: rgba(25,118,210,0.12); }
+.follow-btn:hover {
+  background: rgba(25,118,210,0.12);
+}
 
-.follow-btn svg { width: 20px; height: 20px; fill: #1976d2; }
+.follow-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #1976d2;
+}
 
-.follow-btn.loading svg { animation: spin 0.6s linear infinite; opacity: 0.6; }
+.follow-btn.loading svg {
+  animation: spin 0.6s linear infinite;
+  opacity: 0.6;
+}
 
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* ===== Tabs ===== */
+/* ---------- Tabs ---------- */
 .tabs {
   display: flex;
   align-items: center;
@@ -114,15 +146,27 @@ small {
   transition: font-weight 0.15s ease;
 }
 
-.tabs a:hover { font-weight: bold; color: black; }
+.tabs a:hover {
+  font-weight: bold;
+  color: black;
+}
 
-.tabs a.active { font-weight: bold; color: black; cursor: default; }
+.tabs a.active {
+  font-weight: bold;
+  color: black;
+  cursor: default;
+}
 
-/* ===== Search Bar ===== */
+/* ---------- Search Bars ---------- */
 #search {
   width: 100%;
   padding: 0.6em;
   margin: 0.5em 0 1em 0;
   border-radius: 6px;
   border: 1px solid #ccc;
+}
+
+/* ---------- Utility / Misc ---------- */
+strong {
+  font-weight: bold;
 }
