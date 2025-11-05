@@ -1,178 +1,217 @@
-/* === Base & body styles === */
+/* ========== GLOBAL STYLES ========== */
 body {
-    font-family: system-ui, sans-serif;
-    margin: 2em;
-    max-width: 600px;
-    background: #fff;
-    color: #000;
+  font-family: system-ui, sans-serif;
+  margin: 2em;
+  max-width: 600px;
 }
-
 a {
-    color: #1976d2;
-    text-decoration: none;
+  color: #007bff;
+  text-decoration: none;
 }
-
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
+}
+h1, h3 {
+  margin-top: 1em;
 }
 
-small {
-    color: gray;
-    font-size: 0.85em;
+/* ========== POST CARD / CREATE POST BOX ========== */
+.post-card {
+  background: #e3f2fd;
+  border-radius: 12px;
+  padding: 0.6em 0.75em;
+  margin-bottom: 1.5em;
+  display: flex;
+  gap: 0.6em;
+  align-items: stretch;
+  justify-content: space-between;
+  min-height: 56px;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+.post-card textarea {
+  flex: 1;
+  min-height: 44px;
+  height: 100%;
+  align-self: stretch;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.4;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #111;
+  box-sizing: border-box;
+  overflow: auto;
+}
+.post-card button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: center;
+  transition: background 0.12s ease, transform 0.3s ease;
+}
+.post-card button:hover {
+  background: rgba(25,118,210,0.12);
+}
+.post-card button svg {
+  width: 22px;
+  height: 22px;
+  fill: #1976d2;
+  transition: opacity 0.3s ease, transform 0.6s ease;
+}
+.post-card button.loading svg {
+  opacity: 0.6;
+  filter: grayscale(1);
+  animation: spin 0.6s linear infinite;
 }
 
-/* === Profile card (main & secondary) === */
-.profile-card {
-    background: #e3f2fd;
-    padding: 1em;
-    border-radius: 8px;
-    margin-bottom: 1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.profile-card h1, .profile-card #username {
-    font-size: 1.4em;
-    margin-bottom: 0.2em;
-}
-
-.profile-card p, .profile-card #bio {
-    font-size: 1.05em;
-    margin-bottom: 0.5em;
-}
-
-.profile-card #dateCreated {
-    font-size: 0.9em;
-    color: #555;
-}
-
-/* === Posts / Cards === */
-.post, .main-post-card {
-    background: #f5f5f5;
-    padding: 0.8em;
-    margin: 0.5em 0;
-    border-radius: 6px;
-    transition: background 0.2s;
-    cursor: pointer;
-}
-
-.post:hover, .main-post-card:hover {
-    background: #e3f2fd;
-}
-
-.post-header, .main-post-card .post-header {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.post-header a {
-    margin-left: 0.5em;
-    font-weight: normal;
-}
-
-.post-message, .main-post-card .post-message {
-    margin: 0.5em 0;
-}
-
-/* === Buttons === */
-button, .follow-btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.12s ease, transform 0.3s ease;
-}
-
-.follow-btn:hover {
-    background: rgba(25,118,210,0.12);
-}
-
-.follow-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: #1976d2;
-}
-
-.follow-btn.loading svg {
-    animation: spin 0.6s linear infinite;
-    opacity: 0.6;
-}
-
+/* Spin animation */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* === Tabs === */
+/* ========== FEED MESSAGES / POSTS ========== */
+.message {
+  position: relative;
+  background: #f5f5f5;
+  padding: 0.6em;
+  margin: 0.5em 0;
+  border-radius: 6px;
+}
+.message .post-message {
+  flex: 1;
+}
+.post-header {
+  font-weight: bold;
+}
+small {
+  color: gray;
+}
+
+/* Like button */
+.message .like-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 4px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.3s ease;
+}
+.message .like-btn:hover {
+  background: rgba(25,118,210,0.12);
+}
+.message .like-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #1976d2;
+  transition: opacity 0.3s ease, transform 0.6s ease;
+}
+.message .like-btn.loading svg {
+  opacity: 0.6;
+  filter: grayscale(1);
+  animation: spin 0.6s linear infinite;
+}
+
+/* Hover highlight for all cards */
+.post:hover,
+.message:hover,
+.user:hover,
+.comment:hover {
+  background: #e3f2fd !important;
+  transition: background 0.2s ease;
+}
+
+/* ========== SEARCH INPUT ========== */
+#search {
+  width: 100%;
+  padding: 0.6em;
+  margin: 0.5em 0 1em 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ========== PROFILE CARD (user.html, following.html, followers.html) ========== */
+.profile-card {
+  background: #e3f2fd;
+  padding: 1em;
+  border-radius: 8px;
+  margin-bottom: 1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#username { font-size: 1.4em; margin-bottom: 0.2em; }
+#bio { font-size: 1.05em; margin-bottom: 0.5em; }
+#dateCreated { font-size: 0.9em; color: #555; }
+
+/* Follow button */
+.follow-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.3s ease;
+}
+.follow-btn:hover { background: rgba(25,118,210,0.12); }
+.follow-btn svg { width: 20px; height: 20px; fill: #1976d2; }
+
+/* ========== TABS ========== */
 .tabs {
-    display: flex;
-    align-items: center;
-    gap: 2em;
-    margin: 1.2em 0 1em 0;
-    font-size: 1.25em;
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  margin: 1.2em 0 1em 0;
+  font-size: 1.25em;
 }
-
 .tabs a {
-    color: black;
-    text-decoration: none;
-    font-weight: normal;
-    transition: font-weight 0.15s ease;
+  color: black;
+  text-decoration: none;
+  font-weight: normal;
+  transition: font-weight 0.15s ease, color 0.15s ease;
 }
-
 .tabs a:hover {
-    font-weight: bold;
+  font-weight: bold;
+  color: black;
 }
-
 .tabs a.active {
-    font-weight: bold;
-    cursor: default;
+  font-weight: bold;
+  color: black;
+  cursor: default;
 }
 
-/* === Inputs / Search Bars / Textareas === */
-#search, textarea, input[type="text"], input[type="search"] {
-    width: 100%;
-    padding: 0.6em;
-    margin: 0.5em 0 1em 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-family: inherit;
-    font-size: 1em;
+/* ========== POST CARD ON OTHER PAGES (user.html, post.html) ========== */
+.post {
+  background: #f5f5f5;
+  padding: 0.8em;
+  margin: 0.5em 0;
+  border-radius: 6px;
+  transition: background 0.2s;
+  cursor: pointer;
 }
-
-/* === Main post / main user cards larger === */
-.main-post-card, .main-user-card {
-    background: #f5f5f5;
-    padding: 1.2em;
-    margin: 0.8em 0;
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-
-.main-post-card:hover, .main-user-card:hover {
-    background: #e3f2fd;
-}
-
-.main-post-card .post-header, .main-user-card #username {
-    font-size: 1.3em;
-    font-weight: bold;
-}
-
-/* === Logged-in user box on users.html / index.html === */
-.logged-in-user {
-    background: #e3f2fd;
-    padding: 1em;
-    border-radius: 8px;
-    margin-bottom: 1em;
-}
-
-/* === Misc / Utility === */
-.hidden {
-    display: none !important;
-}
+.post-header { font-weight: bold; font-size: 1.1em; }
+.post-header a { margin-left: 0.5em; font-weight: normal; }
