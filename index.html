@@ -1,9 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="styles.css">
   <meta charset="UTF-8" />
   <title>Home</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 2em;
+      max-width: 600px;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    h1, h3 {
+      margin-top: 1em;
+    }
+
+    /* post card container: use stretch so children fill height */
+    .post-card {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 0.6em 0.75em;      /* inner padding for the card */
+      margin-bottom: 1.5em;
+      display: flex;
+      gap: 0.6em;
+      align-items: stretch;       /* <--- important: lets textarea stretch vertically */
+      justify-content: space-between;
+      min-height: 56px;           /* compact height; will grow with textarea content */
+      box-shadow: none;           /* no shadow so textarea blends in */
+      box-sizing: border-box;
+    }
+    
+    /* textarea: take all remaining space and stretch fully */
+    .post-card textarea {
+      flex: 1;                    /* take remaining width */
+      min-height: 44px;           /* minimum editable height */
+      height: 100%;               /* fill the card vertically */
+      align-self: stretch;        /* ensure full height inside flex container */
+      background: transparent;    /* visually blend with card */
+      border: none;               /* no border */
+      outline: none;
+      resize: none;               /* optional: disallow manual resize to preserve layout */
+      padding: 0;                 /* no internal padding so text aligns with card */
+      margin: 0;
+      line-height: 1.4;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #111;
+      box-sizing: border-box;
+      overflow: auto;             /* scroll if multiple lines exceed container */
+    }
+    
+    /* button: fixed size, right side, vertically centered */
+    .post-card button {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: none;
+      border: none;
+      padding: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      align-self: center;
+      transition: background 0.12s ease, transform 0.3s ease;
+    }
+    
+    /* hover effect for button */
+    .post-card button:hover {
+      background: rgba(25,118,210,0.12);
+    }
+    
+    /* svg icon base */
+    .post-card button svg {
+      width: 22px;
+      height: 22px;
+      fill: #1976d2;
+      transition: opacity 0.3s ease, transform 0.6s ease;
+    }
+    
+    /* loading (spinning + shaded) */
+    .post-card button.loading svg {
+      opacity: 0.6;
+      filter: grayscale(1);
+      animation: spin 0.6s linear infinite;
+    }
+    
+    /* spin animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .message {
+      position: relative;
+      padding-right: 3em; /* space for like button */
+    }
+    
+    .message .like-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      margin-right: 4px; /* ✅ fixes right cutoff */
+      background: none;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.3s ease;
+    }
+    
+    .message .like-btn:hover {
+      background: rgba(25,118,210,0.12);
+    }
+    
+    .message .like-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #1976d2;
+      transition: opacity 0.3s ease, transform 0.6s ease;
+    }
+    
+    .message .like-btn.loading svg {
+      opacity: 0.6;
+      filter: grayscale(1);
+      animation: spin 0.6s linear infinite;
+    }
+
+    #search {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0 1em 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    /* Posts feed */
+    .message {
+      background: #f5f5f5;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      border-radius: 6px;
+    }
+
+    .post-header {
+      font-weight: bold;
+    }
+
+    small {
+      color: gray;
+    }
+
+    /* Hover highlight for all cards */
+    .post:hover,
+    .message:hover,
+    .user:hover,
+    .comment:hover {
+      background: #e3f2fd !important;
+      transition: background 0.2s ease;
+    }
+    
+    /* Tabs navigation */
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 2em;
+      margin: 1.2em 0 1em 0;
+      font-size: 1.25em;
+    }
+    
+    .tabs a {
+      color: black;
+      text-decoration: none;
+      font-weight: normal;
+      transition: font-weight 0.15s ease, color 0.15s ease;
+    }
+    
+    .tabs a:hover {
+      font-weight: bold;
+      color: black;
+    }
+    
+    .tabs a.active {
+      font-weight: bold;
+      color: black;
+      cursor: default;
+    }
+  </style>
 </head>
 <body>
   <h1>Home</h1>
